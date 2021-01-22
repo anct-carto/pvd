@@ -194,7 +194,7 @@ let cardTemplate = {
                 <ul>
                     <li>Département : {{ pvd.lib_dep }} ({{ pvd.insee_dep }})</li>         
                     <li>Région : {{ pvd.lib_reg }}</li>
-                    <li v-if="pvd.lib_epci">EPCI : {{ pvd.lib_reg }}</li>
+                    <li v-if="pvd.lib_epci">EPCI : {{ pvd.lib_epci }}</li>
                     <li v-if="pvd.pop">Nombre d'habitants : {{ pvd.pop }}</li>         
                     <li v-if="pvd.nom_maire">Nom du Maire : {{ pvd.nom_maire }}</li>         
                     <li v-if="pvd.date_signature">Date de signature de la convention : {{ pvd.date_signature }}</li>         
