@@ -124,39 +124,34 @@ body i {
 	vertical-align: middle;
 }
 
-.leaflet-tooltip {
-	background-color: hotpink;
-	margin: -25px 0px;
-}
-
-.fs-marker:hover {
-	background-color: hotpink;
-}
 
 /* -------------------------------------------------------------------------- */
 /* 									LEAFLET MAP						 		  */
 /* -------------------------------------------------------------------------- */
 
-.leaflet-popup-tip {
-	display: none;
-  }
+.leaflet-tooltip-top:before, 
+.leaflet-tooltip-bottom:before {
+	border: none !important;
+}
 
 .leaflet-tooltip {
-	max-width:200px;
+	top: -10px;
 	white-space:normal ;
 	text-align: center;
-	padding:0 5px !important;
+	padding:0 -25px !important;
 	border:none !important;
-	margin-bottom: -25px !important;
-	margin-left: -5px !important;
 	opacity: 1;
 	background-color: var(--bleu-second) !important;
 	color: white !important;
-	font-size:.9em;
+	font-size:1em;
 	font-family: 'abel-regular';
-	font-weight:bold;
+	font-weight:900;
 }
 
+.leaflet-tooltip-clicked {
+	background-color: orange !important;
+	color:var(--bleu-anct) !important;
+}
 
 .leaflet-tooltip-hovered {
 	font-size:1.1em;
@@ -247,16 +242,15 @@ li {
 
 .card-body {
 	padding: 15px 20px 20px 15px;
-	font-size: .9em;
+	font-size: .8em;
 }
 
 .card-body ul {
 	padding-left: 9px;
-}
-
-.card-body p, ul {
 	margin-bottom: 7px;
 }
+
+/* bouton retour */
 
 #back-btn {
 	background-color: orange;
