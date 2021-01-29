@@ -1,7 +1,9 @@
 :root {
 	--bleu-anct:#293173;
 	--bleu-second:#5770be;
-	--jaune-anct:#ffe800
+	--jaune-anct:#ffe800;
+	--color-programme:rgb(156,185,77);
+	--color-programme-second:rgb(229,125,84);
 }
 
 
@@ -15,9 +17,8 @@ html, body, #mapid {
 	height: 100%;
 	width: 100%;
 	position: absolute;
-	/* font-family: 'abel-regular', Arial, Helvetica, sans-serif !important; */
 	font-family: 'Marianne-regular', Arial, Helvetica, sans-serif !important;
-	font-size: .98em;
+	font-size: 1em;
 }
 
 body i {
@@ -60,7 +61,9 @@ body i {
 }
 
 .leaflet-sidebar-header {
-	background-color: orange;
+	background-color: var(--color-programme);
+	font-family: 'Marianne-Bold';
+	text-transform: uppercase;
 	margin-bottom: 10px;
 	display: block;
 }
@@ -73,7 +76,7 @@ body i {
 
 .leaflet-sidebar-tabs > ul > li.active,
 .leaflet-sidebar-tabs > ul > li.active:hover {
-	 background-color: orange;
+	 background-color: var(--color-programme);
  }
 
 .leaflet-sidebar-tabs > ul > li:hover {
@@ -96,33 +99,19 @@ body i {
 	border-radius: 4px;
 }
 
-.leaflet-legend-marker-siege {
-  height: 10px;
-  width: 10px;
-  background-color: #19A007;
-  border: 1px solid white;
-  border-radius: 50%;
-  display: inline-block;
-}
+/* chef lieux */
 
-.leaflet-legend-marker-antenne {
-  height: 10px;
-  width: 10px;
-  background-color: var(--bleu-anct);
-  border: 1px solid white;
-  border-radius: 50%;
-  display: inline-block;
-}
-
-.leaflet-legend-perimeter {
-	height: 15px;
-	width: 15px;
-	background-color: none;
-	border: 2px solid red;
-	border-radius: 50%;
-	display: inline-block;
-	vertical-align: middle;
-}
+.leaflet-marker-pane {
+	left:-10px;
+	opacity: 0.75;
+	font-family: 'Abel-Regular';
+	font-size: .9em;
+	font-weight: 600;
+	border-color:white;
+	justify-content: center;
+	text-align: center;
+	text-shadow: -0.5px 0 white, 0 0.5px white, 0.5px 0 white, 0 -0.5px white;
+  }
 
 
 /* -------------------------------------------------------------------------- */
@@ -141,7 +130,7 @@ body i {
 	padding:0 -25px !important;
 	border:none !important;
 	opacity: 1;
-	background-color: var(--bleu-second) !important;
+	background-color: var(--color-programme-second) !important;
 	color: white !important;
 	font-size:1em;
 	font-family: 'abel-regular';
@@ -149,27 +138,24 @@ body i {
 }
 
 .leaflet-tooltip-clicked {
-	background-color: orange !important;
-	color:var(--bleu-anct) !important;
+	left: -15px;
+	background-color: var(--color-programme-second)!important;
 }
 
-.leaflet-tooltip-hovered {
-	font-size:1.1em;
-	margin:-40px 0px !important;
-	border:none !important;
-	background-color: #19A007 !important;
+.leaflet-tooltip-info {
+	font-weight: normal !important;
 }
 
 
-#logo_fs {
-	padding-top:10px;
-	height:137px;
-	vertical-align:middle
+
+/* -------------------------------------------------------------------------- */
+/* 									INTRO							 		  */
+/* -------------------------------------------------------------------------- */
+
+#logo-programme {
+	width: 100%;
 }
 
-#intro {
-	display: block;
-}
 
 /* -------------------------------------------------------------------------- */
 /* 									SEARCH BAR						 		  */
@@ -193,7 +179,7 @@ li {
 
 .list-group {
 	position: absolute;
-	width: 93.5%;
+	width: 100%;
 	background-color: white;
 	z-index: 100000;
 	cursor: pointer;
@@ -203,8 +189,8 @@ li {
 }
 
 .list-group-item.is-active, .list-group-item:hover {
-	background-color: var(--bleu-second);
-	font-weight: bolder;
+	background-color: var(--bleu-anct);
+	font-family: 'Marianne-Bold';
 	color:white;
 	display: block;
 }
@@ -222,27 +208,19 @@ li {
 
 
 .card {
+	margin-top: 30px;
 	background-color: white;
 }
 
 
 .card-header {
-	padding-top: 5px;
-	padding-bottom: 5px;
-	background-color: orange;
-	color:white;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	background-color: white;
+	color:var(--color-programme-second);
 	font-family: 'Marianne-Bold';
-	font-size: 1.1em;
-}
-
-.card-header i {
-	font-size: .99em;
-
-}
-
-.card-body {
-	padding: 15px 20px 20px 15px;
-	font-size: .8em;
+	font-size: 1.6em;
+	border-bottom: 2px solid var(--color-programme-second);
 }
 
 .card-body ul {
@@ -250,21 +228,54 @@ li {
 	margin-bottom: 7px;
 }
 
+.subtitle {
+	color:gray;
+	font-size: .95em;
+}
+
+.element {
+	font-family: 'Marianne-Bold';
+	font-size: 1.3em;
+}
+
 /* bouton retour */
 
 #back-btn {
-	background-color: orange;
-	border: orange;
+	background-color: var(--color-programme);
+	border: none;
 	font-size: .9em;
 }
 
 #back-btn:hover {
 	font-family: "Marianne-Bold";
-	background-color: orangered;
+	opacity: .75;;
 }
 
 #back-btn i {
 	font-size: .8em;
 }
 
-/* show more cards */
+/* -------------------------------------------------------------------------- */
+/* 								 SCROLL BAR						   	 		  */													
+/* -------------------------------------------------------------------------- */
+
+/* width */
+::-webkit-scrollbar {
+	width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+	background: #f1f1f1; 
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background: #888; 
+	border-radius: 2px;
+  }
+  
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+	background: #555; 
+  }
