@@ -204,7 +204,7 @@ let leafletSidebar = {
             <!-- bottom aligned tabs -->
             <ul role="tablist">
                 <li><a href="#a-propos" role="tab"><i class="fal fa-question"></i></a></li>
-                <li><a href="https://github.com/cget-carto/France-services" target="_blank"><i class="fas fa-github"></i></a></li>
+                <li><a href="https://github.com/anct-carto/pvd" target="_blank"><i class="fas fa-github"></i></a></li>
             </ul>
         </div>
         <!-- panel content -->
@@ -504,8 +504,6 @@ let leafletMap = {
             if(page_status == undefined) {
                 window.setTimeout(this.checkPageStatus,5);
             } else {
-                // clusters
-                let markers = L.markerClusterGroup();
 
                 let reg_layer = L.layerGroup();
                 let dep_layer = L.layerGroup();
