@@ -8,4 +8,4 @@
 La liste des communes sélectionnées est publiée par l'ANCT sous Licence Ouverte 2.0 sur la plateforme [data.gouv](https://www.data.gouv.fr/fr/datasets/programme-petites-villes-de-demain/).
 
 # Pour en savoir plus sur le programme 
-Sur le site de l'ANCT : [petitesvillesdedemain.anct.gouv.fr](petitesvillesdedemain.anct.gouv.fr)
+Sur le site de l'ANCT : [petitesvillesdedemain.anct.gouv.fr](https://petitesvillesdedemain.anct.gouv.fr)
