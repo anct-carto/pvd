@@ -33,6 +33,7 @@ let searchBar = {
                             <li class="list-group-item" v-for="(suggestion, i) in suggestionsList"
                                 @click="onClickSuggest(suggestion)"
                                 @mouseover="onMouseover(i)"
+                                @mouseout="onMouseout(i)"
                                 :class="{ 'is-active': i === index }">
                                     {{ suggestion.lib_com }} ({{ suggestion.insee_dep }})
                             </li>
@@ -83,7 +84,7 @@ let searchBar = {
         onKeyUp(e) {
             if (this.index > 0) {
                 this.index = this.index - 1;
-            }
+            };
         },
         onKeyDown(e) {
             if (this.index < this.suggestionsList.length) {
@@ -92,6 +93,9 @@ let searchBar = {
         },
         onMouseover(e) {
             this.index = e;
+        },
+        onMouseout(e) {
+            this.index = -1;
         },
         onEnter() {
             this.isOpen = !this.isOpen;

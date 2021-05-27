@@ -161,9 +161,28 @@ body i {
 /* 									SEARCH BAR						 		  */
 /* -------------------------------------------------------------------------- */
 
+#search-bar-container {
+	position: relative;
+	margin-bottom: 10px;
+}
+
+
+.input-group-prepend {
+	position: relative;
+}
+
+#search-field {
+	font-size: 1.15em;
+	border-right: none;
+}
 
 .input-group-text i {
 	font-size: 1em;
+}
+
+.input-group-text {
+	width:20px;
+	padding:0 15px 0 7px;
 }
 
 
@@ -178,13 +197,15 @@ li {
 }
 
 .list-group {
-	position: absolute;
 	width: 100%;
+	position: absolute;
+}
+
+.list-group-item {
 	background-color: white;
-	z-index: 100000;
 	cursor: pointer;
 	list-style: none;
-	transition: .2s;
+	transition: .05s;
 	box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
 }
 
