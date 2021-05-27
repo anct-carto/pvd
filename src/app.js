@@ -31,7 +31,8 @@ let searchBar = {
                     <div class="autocomplete-suggestions-conainter" v-if="isOpen">
                         <ul class = "list-group">
                             <li class="list-group-item" v-for="(suggestion, i) in suggestionsList"
-                                v-on:click="onClickSuggest(suggestion)"
+                                @click="onClickSuggest(suggestion)"
+                                @mouseover="onMouseover(i)"
                                 :class="{ 'is-active': i === index }">
                                     {{ suggestion.lib_com }} ({{ suggestion.insee_dep }})
                             </li>
@@ -49,6 +50,16 @@ let searchBar = {
     computed: {
         data() {
             return spreadsheet_res
+        }
+    },
+    watch: {
+        inputAdress() {
+            if (!this.inputAdress) {
+                this.isOpen = !this.isOpen;
+                this.index = 0;
+                this.suggestionsList = [];
+                // this.$emit('searchResult',' ') // reinitialize map
+            }
         }
     },
     methods: {
@@ -78,6 +89,9 @@ let searchBar = {
             if (this.index < this.suggestionsList.length) {
                 this.index = this.index + 1;
             }
+        },
+        onMouseover(e) {
+            this.index = e;
         },
         onEnter() {
             this.isOpen = !this.isOpen;
