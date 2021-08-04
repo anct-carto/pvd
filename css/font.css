@@ -9,6 +9,11 @@
 }
 
 @font-face {
+  font-family: 'Marianne-Extrabold';
+  src: url('fonts/Marianne-Extrabold.woff2');
+}
+
+@font-face {
   font-family: 'Abel-Regular';
   font-style: lighter;
   font-weight: 200;
