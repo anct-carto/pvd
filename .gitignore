@@ -1,11 +1,13 @@
 package.json
 node_modules
 package-lock.json
+/nodes_modules
+/data_init
 *.R
 *.Rproj
 *.csv
 *.zip
 package.json
 package-lock.json
-/nodes_modules
-/data_init
+.Rproj.user
+img_cartotheque.PNG
