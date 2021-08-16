@@ -1,8 +1,9 @@
+.gitignore
 package.json
 node_modules
 package-lock.json
-/nodes_modules
-/data_init
+nodes_modules/
+data_init/*
 *.R
 *.Rproj
 *.csv

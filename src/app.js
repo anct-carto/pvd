@@ -1,5 +1,5 @@
 const loading = document.getElementById("loading");
-const data_url = "https://docs.google.com/spreadsheets/d/1BHiW6bJky9cjkZDNz3bcBxrKqcZTq5YNswoNhqJGmYM/edit#gid=0"
+const data_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOLYK3fGTi0MyoFY4iAz9zDsXFy7_t-dni9ijNBKnVZTW540K73BXDYCeUGJN80hXqCqscqX9xO19v/pub?output=csv"
 let spreadsheet_res = [];
 let tab = JSON.parse(sessionStorage.getItem("session_data"));
 let page_status;
@@ -286,7 +286,7 @@ let leafletSidebar = {
                 </p>
                 <p>
                     <b>Réalisation  et maintenance de l'outil :</b>
-                    ANCT, <a href = 'https://cartotheque.anct.gouv.fr/cartes' target="_blank">Cartographes</a> du pôle Analyse & diagnostics territoriaux
+                    ANCT, pôle Analyse & diagnostics territoriaux - <a href = 'https://cartotheque.anct.gouv.fr/cartes' target="_blank">Service cartographie</a>
                 </p>
                 <p>Technologies utilisées : Leaflet, Bootstrap, VueJS</p>
                 <p>Le code source de cet outil est libre et consultable sur <a href="https://www.github.com/anct-carto/pvd" target="_blank">Github</a>.</p>
@@ -764,12 +764,17 @@ let leafletMap = {
               });;
         },
         init() {
-            Tabletop.init({
+            Papa.parse(data_url, {
+                download: true,
+                header: true,
+                complete: (results) => this.fetchSpreadsheetData(results.data)
+            });
+/*             Tabletop.init({
               key: data_url,
               callback: this.fetchSpreadsheetData,
               simpleSheet: true
             })
-        },
+ */        },
         fetchSpreadsheetData(res) {
             fetch("data/geom_com2020.geojson")
                 .then(res => res.json())
