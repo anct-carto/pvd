@@ -519,11 +519,12 @@ const LeafletMap = {
                         className:'leaflet-tooltip',
                         opacity:1,
                         offset:[0,-15],
-                        permanent:false
                     },
                     clicked:{
                         direction:"top",
                         className:'leaflet-tooltip-clicked',
+                        permanent:true,
+                        offset:[0,-15],
                     },
                 }
             },
@@ -564,11 +565,14 @@ const LeafletMap = {
         baseMapLayer() {
             return L.layerGroup({className: 'basemap-layer',interactive:false}).addTo(this.map)
         },
+        labelLayer() {
+            return L.layerGroup({className: 'label-layer',interactive:false}).addTo(this.map)
+        },
         comLayer() {
-            return L.layerGroup({className: 'basemap-layer',interactive:false}).addTo(this.map)
+            return L.layerGroup({className: 'com-layer',interactive:false}).addTo(this.map)
         },
         hoveredLayer() {
-            return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
+            return L.layerGroup({ className: 'hovered-layer' }).addTo(this.map);
         },
         pinLayer() {
             return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
@@ -577,7 +581,7 @@ const LeafletMap = {
     async mounted() {
         loadingScreen.show() // pendant le chargement, active le chargement d'écran
         await this.createBasemap(); // créé les géométries d'habillage !!! ne fonctionne pas avec les tuiles vectorielles !!!!
-        // this.displayToponym(); // affiche les toponymes d'habillage
+        this.displayToponym(); // affiche les toponymes d'habillage
 
         this.data = await getData(dataUrl); // charge les données
         this.comGeom = await this.loadGeom("data/geom_com2020.geojson") // charge les géométries de travail 
@@ -683,6 +687,7 @@ const LeafletMap = {
             // style à appliquer
             let glow = new L.circleMarker(coordsResult,this.styles.features.clicked).addTo(this.pinLayer);
             let circle = new L.circleMarker(coordsResult,this.styles.features.default).addTo(this.pinLayer);
+            circle.bindTooltip(content.lib_com,this.styles.tooltip.default).openTooltip()
             circle.setStyle({fillColor:this.getColor("pvd")});
             glow.setStyle({fillColor:this.getColor("pvd")});
 
