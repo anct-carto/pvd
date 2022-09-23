@@ -590,22 +590,29 @@ const LeafletMap = {
         this.displayToponym(); // affiche les toponymes d'habillage
 
         this.data = await getData(dataUrl); // charge les données
-        this.comGeom = await this.loadGeom("data/geom_com2020.geojson") // charge les géométries de travail 
-        this.joinedData = this.joinGeom(this.data,this.comGeom,"insee_com")
+        this.comGeom = await this.loadGeom("data/centroide-fr-drom-4326-style1-com.geojson") // charge les géométries de travail 
+        // this.joinedData = this.joinGeom(this.data,this.comGeom,"insee_com")
+        this.joinedData = this.comGeom.features.filter(e => this.data.map(e => e.insee_com).includes(e.properties.insee_com))
         this.createFeatures(this.joinedData); // affiche les géométries de travail
 
         loadingScreen.hide() // enlève le chargement d'écran
 
         //////////////////////////////////////////////////
 
+        // NE FONCTIONNE PAS CAR PROPRIETES INITIALES PERDUES .... 
+        
         // cercles prop à l'échelle des départements 
-        let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"))
-        this.data.forEach(e => e.insee_com.substr(0,2) === "97" ? e.insee_dep = e.insee_com.substr(0,3) : e.insee_dep = e.insee_com.substr(0,2))
-
-        // calculer symboles proportionnels
-        let nbPvdPerDep = countBy(this.data,"insee_dep");
+        let nbPvdPerDep = countBy(geojsonToJson(this.joinedData),"insee_dep");
+        console.log(nbPvdPerDep);
+        let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"));
         let GeomNbPvdPerDep = this.joinGeom(nbPvdPerDep,depGeomCtr,"insee_dep");
         this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsRegLayer);
+
+        // cercles prop à l'échelle des regions 
+        // let nbPvdPerReg = countBy(geojsonToJson(this.joinedData),"insee_reg");
+        // let regGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson"));
+        // let GeomNbPvdPerReg = this.joinGeom(nbPvdPerReg,regGeomCtr,"insee_reg");
+        // this.propSymbols(GeomNbPvdPerReg,"nb","insee_reg","insee_reg").addTo(this.propSymbolsRegLayer);
     },
     methods: {
         async loadGeom(file) {
@@ -659,8 +666,8 @@ const LeafletMap = {
                 acc[curr[id]] = {properties:curr}
                 return acc;
             }, {});
-            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties[id]]));
-            combined = combined.filter(e => attributs.map(e=>e[id]).includes(e.properties[id]))
+            let combined = geometries.features.map(d => Object.assign(d, [arr2Map[d.properties[id]]]));
+            combined = combined.filter(e => attributs.map(e=>e[id]).includes(e.properties[id]));
             return combined
         },
         createFeatures(geomData) {
@@ -1454,7 +1461,8 @@ function getCentroid(geom) {
     let featureCollection = {
             type:'FeatureCollection',
             features:features 
-    }
+    };
+
     return featureCollection;
 }
 
@@ -1471,4 +1479,10 @@ function countBy(data,id) {
     });
 
     return globalCount
+}
+
+function geojsonToJson(geom) {
+    let final = [];
+    geom.forEach(e => final.push(e.properties))
+    return final
 }
