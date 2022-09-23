@@ -4,7 +4,7 @@ let spreadsheet_res = [];
 let tab = JSON.parse(sessionStorage.getItem("session_data"));
 let page_status;
 
-
+"test"
 
 
 // ****************************************************************************
@@ -769,12 +769,7 @@ let leafletMap = {
                 header: true,
                 complete: (results) => this.fetchSpreadsheetData(results.data)
             });
-/*             Tabletop.init({
-              key: data_url,
-              callback: this.fetchSpreadsheetData,
-              simpleSheet: true
-            })
- */        },
+        },
         fetchSpreadsheetData(res) {
             fetch("data/geom_com2020.geojson")
                 .then(res => res.json())
