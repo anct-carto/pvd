@@ -603,7 +603,6 @@ const LeafletMap = {
         
         // cercles prop à l'échelle des départements 
         let nbPvdPerDep = countBy(geojsonToJson(this.joinedData),"insee_dep");
-        console.log(nbPvdPerDep);
         let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"));
         let GeomNbPvdPerDep = this.joinGeom(nbPvdPerDep,depGeomCtr,"insee_dep");
         this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsRegLayer);
@@ -667,7 +666,7 @@ const LeafletMap = {
                 return acc;
             }, {});
             let combined = geometries.features.map(d => Object.assign(d, [arr2Map[d.properties[id]]]));
-            combined = combined.filter(e => attributs.map(e=>e[id]).includes(e.properties[id]));
+            combined = combined.filter(e => attributs.map( e => e[id]).includes(e.properties[id]));
             return combined
         },
         createFeatures(geomData) {
