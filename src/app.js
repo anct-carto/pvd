@@ -409,8 +409,8 @@ const LeafletSidebar = {
     },
 };
 
-let marker;
-let circle;
+// //////////////////////////////////////////////
+
 
 const LeafletMap = {
     template: `
@@ -577,6 +577,12 @@ const LeafletMap = {
         pinLayer() {
             return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
         },
+        propSymbolsDepLayer() {
+            return L.layerGroup({}).addTo(this.map);
+        },
+        propSymbolsRegLayer() {
+            return L.layerGroup({}).addTo(this.map);
+        },
     },
     async mounted() {
         loadingScreen.show() // pendant le chargement, active le chargement d'écran
@@ -585,11 +591,21 @@ const LeafletMap = {
 
         this.data = await getData(dataUrl); // charge les données
         this.comGeom = await this.loadGeom("data/geom_com2020.geojson") // charge les géométries de travail 
-        this.joinedData = this.joinGeom(this.data,this.comGeom)
-        console.log(this.joinedData);
+        this.joinedData = this.joinGeom(this.data,this.comGeom,"insee_com")
         this.createFeatures(this.joinedData); // affiche les géométries de travail
 
         loadingScreen.hide() // enlève le chargement d'écran
+
+        //////////////////////////////////////////////////
+
+        // cercles prop à l'échelle des départements 
+        let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"))
+        this.data.forEach(e => e.insee_com.substr(0,2) === "97" ? e.insee_dep = e.insee_com.substr(0,3) : e.insee_dep = e.insee_com.substr(0,2))
+
+        // calculer symboles proportionnels
+        let nbPvdPerDep = countBy(this.data,"insee_dep");
+        let GeomNbPvdPerDep = this.joinGeom(nbPvdPerDep,depGeomCtr,"insee_dep");
+        this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsRegLayer);
     },
     methods: {
         async loadGeom(file) {
@@ -606,7 +622,7 @@ const LeafletMap = {
 
             new L.GeoJSON(depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
             new L.GeoJSON(regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
-            new L.GeoJSON(epciGeom, this.styles.basemap.epci).addTo(this.baseMapLayer);
+            // new L.GeoJSON(epciGeom, this.styles.basemap.epci).addTo(this.baseMapLayer);
             new L.GeoJSON(cerclesDromGeom,this.styles.basemap.drom).addTo(this.baseMapLayer);
         },
         displayToponym() {
@@ -638,13 +654,13 @@ const LeafletMap = {
             })
         },
         // jointure entre attributs et géométries
-        joinGeom(attributs,geometries) {
+        joinGeom(attributs,geometries,id) {
             let arr2Map = attributs.reduce((acc, curr) => {
-                acc[curr.insee_com] = {properties:curr}
+                acc[curr[id]] = {properties:curr}
                 return acc;
             }, {});
-            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties.insee_com]));
-            combined = combined.filter(e => this.data.map(e=>e.insee_com).includes(e.properties.insee_com))
+            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties[id]]));
+            combined = combined.filter(e => attributs.map(e=>e[id]).includes(e.properties[id]))
             return combined
         },
         createFeatures(geomData) {
@@ -715,6 +731,33 @@ const LeafletMap = {
                 if(v === type) color = this.styles.categories.colors[i]
             })
             return color
+        },
+        propSymbols(geom,nbCol,id,lib) {
+            const max = geom.reduce((a,b) => {
+                return (a.properties[nbCol] > b.properties[nbCol]) ? a : b
+            }).properties.nb;
+
+            return new L.GeoJSON(geom, {
+                style: {
+                    fillColor:'#e57d40',
+                    fillOpacity:.5,
+                    weight:2,
+                    color:'white'
+                },
+                pointToLayer: (feature, latlng) => {
+                    return L.circleMarker(latlng, {
+                        radius:Math.sqrt(feature.properties[nbCol])*(35/Math.sqrt(max)),
+                    })
+                    .bindTooltip(`${String(feature.properties[lib]).toUpperCase()}<br>
+                    ${feature.properties[nbCol]} <span class='leaflet-tooltip-info'> communes</span>
+                    `)
+                    // .on("click", e => this.onClickOnPropSymbols(e, insee_id, tooltipContent));
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.on("mouseover", (e) => e.target.setStyle({fillOpacity:1}))
+                         .on("mouseout", (e) => e.target.setStyle({fillOpacity:.5}));
+                },
+            });
         },
     },
 }
@@ -1387,4 +1430,45 @@ function createLabelIcon(labelClass,labelText) {
 function svgText(txt) {
     return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text x="0" y = "10">'
         + txt + '</text></svg>';
+}
+
+
+// calculer le centroide d'une géométrie (nécessite d'avoir leaflet en dépendance)
+function getCentroid(geom) {
+    let layer = L.geoJSON(geom)
+    let features = [];
+    
+    layer.eachLayer(e => {
+        props = e.feature.properties;
+        latlng = e.getBounds().getCenter();
+        features.push({
+            type:"Feature",
+            properties:props,
+            geometry:{
+                coordinates:[latlng.lng,latlng.lat],
+                type:"Point",
+            }
+        })
+    });
+
+    let featureCollection = {
+            type:'FeatureCollection',
+            features:features 
+    }
+    return featureCollection;
+}
+
+// calculer le nombre d'entités disposant d'un même identifiant unique
+function countBy(data,id) {
+    let globalCount = data.reduce((total, value) => {
+        total[value[id]] = (total[value[id]] || 0) + 1;
+        return total;
+    }, {});
+
+    // 3/ get insee_id as key 
+    globalCount = Object.keys(globalCount).map(key => {
+        return { [id]: key, nb:globalCount[key] }
+    });
+
+    return globalCount
 }
