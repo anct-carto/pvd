@@ -1,15 +1,10 @@
-/*
-    Carte interactive des communes Petites villes de demain
-    Hassen Chougar / service cartographie - ANCT
-    dependances : Leaflet 1.0.7, vue 2.7, bootstrap 5.2, papaparse 5.3.1
-*/
-
-
 const loading = document.getElementById("loading");
-const data_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOLYK3fGTi0MyoFY4iAz9zDsXFy7_t-dni9ijNBKnVZTW540K73BXDYCeUGJN80hXqCqscqX9xO19v/pub?output=csv"
+const data_url = "https://docs.google.com/spreadsheets/d/1BHiW6bJky9cjkZDNz3bcBxrKqcZTq5YNswoNhqJGmYM/edit#gid=0"
 let spreadsheet_res = [];
 let tab = JSON.parse(sessionStorage.getItem("session_data"));
 let page_status;
+
+
 
 
 // ****************************************************************************
@@ -36,9 +31,7 @@ let searchBar = {
                     <div class="autocomplete-suggestions-conainter" v-if="isOpen">
                         <ul class = "list-group">
                             <li class="list-group-item" v-for="(suggestion, i) in suggestionsList"
-                                @click="onClickSuggest(suggestion)"
-                                @mouseover="onMouseover(i)"
-                                @mouseout="onMouseout(i)"
+                                v-on:click="onClickSuggest(suggestion)"
                                 :class="{ 'is-active': i === index }">
                                     {{ suggestion.lib_com }} ({{ suggestion.insee_dep }})
                             </li>
@@ -58,16 +51,6 @@ let searchBar = {
             return spreadsheet_res
         }
     },
-    watch: {
-        inputAdress() {
-            if (!this.inputAdress) {
-                this.isOpen = !this.isOpen;
-                this.index = 0;
-                this.suggestionsList = [];
-                // this.$emit('searchResult',' ') // reinitialize map
-            }
-        }
-    },
     methods: {
         onKeypress(e) {
             this.isOpen = true;
@@ -83,24 +66,18 @@ let searchBar = {
                 result = this.data.filter(e => {
                     return e.lib_com.toLowerCase().includes(val.toLowerCase())
                 });
-                this.suggestionsList = result.slice(0,6);
+                this.suggestionsList = result.slice(0,5);
             }
         },
         onKeyUp(e) {
             if (this.index > 0) {
                 this.index = this.index - 1;
-            };
+            }
         },
         onKeyDown(e) {
             if (this.index < this.suggestionsList.length) {
                 this.index = this.index + 1;
             }
-        },
-        onMouseover(e) {
-            this.index = e;
-        },
-        onMouseout(e) {
-            this.index = -1;
         },
         onEnter() {
             this.isOpen = !this.isOpen;
@@ -142,6 +119,7 @@ let searchBar = {
 let introTemplate = {
     template: `
     <div>
+        
         <div>
             <h5><b>
                 Révéler le potentiel des petites villes pour des territoires de cohésion au cœur de la relance.
@@ -222,11 +200,11 @@ let leafletSidebar = {
             <!-- top aligned tabs -->
             <ul role="tablist">
                 <li><a href="#home" role="tab"><i class="fal fa-home"></i></a></li>
-                <li><a href="#download" role="tab"><i class="fal fa-download"></i></a></li>
-                <li><a href="#a-propos" role="tab"><i class="fal fa-question"></i></a></li>
             </ul>
             <!-- bottom aligned tabs -->
             <ul role="tablist">
+                <li><a href="#a-propos" role="tab"><i class="fal fa-question"></i></a></li>
+                <li><a href="https://github.com/anct-carto/pvd" target="_blank"><i class="fas fa-github"></i></a></li>
             </ul>
         </div>
         <!-- panel content -->
@@ -238,7 +216,7 @@ let leafletSidebar = {
                         <i class="fal fa-step-backward"></i>
                     </span>
                 </div>
-                <div v-if="!show" class="sidebar-body">
+                <div v-if="!show">
                     <div class="sidebar-header">
                         <img src="img/pvd_logo.png" id="logo-programme"></img>
                     </div><br>
@@ -246,44 +224,22 @@ let leafletSidebar = {
                     <text-intro></text-intro>
                 </div>
                 <div>
-                    <card :pvd="cardContent" v-if="show"></card><br>
+                    <card v-for="(pvd,index) in cardContent" :pvd="pvd" v-if="show"></card><br>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
                         <i class="fa fa-chevron-left"></i>
                         Retour à l'accueil
                     </button>
                 </div>
             </div>
-            <div class="leaflet-sidebar-pane" id="download">
-                <div class="leaflet-sidebar-header">
-                    <span>Téléchargement</span>
-                    <span class="leaflet-sidebar-close">
-                        <i class="fal fa-step-backward"></i>
-                    </span>
-                </div>
-                <h5 style="font-family:'Marianne-Extrabold'">
-                    Télécharger les données
-                </h5>
-                <p>
-                    La liste des communes bénéficiaires est disponible sur 
-                    <a href='https://www.data.gouv.fr/fr/datasets/programme-petites-villes-de-demain/' target="_blank">data.gouv.fr</a>.
-                </p>
-                <h5 style="font-family:'Marianne-Extrabold'">
-                    Télécharger les cartes
-                </h5>
-                <p>
-                    L'ensemble des cartes régionales et départementales est disponible sur la 
-                    <a href='https://cartotheque.anct.gouv.fr/cartes?filters%5Bquery%5D=pvd&current_page=1&category=&page_size=20/' target="_blank">cartothèque de l'ANCT</a>.
-                </p>
-            </div>
             <div class="leaflet-sidebar-pane" id="a-propos">
                 <h2 class="leaflet-sidebar-header">
-                    À propos
+                À propos
                     <span class="leaflet-sidebar-close">
                         <i class="fas fa-step-backward"></i>
                     </span>
                 </h2>
                 <a href="https://agence-cohesion-territoires.gouv.fr/" target="_blank">
-                    <img src="img/logo_anct.png" width="100%" style = 'padding-bottom: 5%;'>
+                    <img src="img/logo_anct.png" width="100%" style = 'padding-bottom: 5%; padding-top: 5%;'>
                 </a>
                 <p>
                     <b>Source et administration des données :</b>
@@ -291,10 +247,10 @@ let leafletSidebar = {
                 </p>
                 <p>
                     <b>Réalisation  et maintenance de l'outil :</b>
-                    ANCT, pôle Analyse & diagnostics territoriaux - <a href = 'https://cartotheque.anct.gouv.fr/cartes' target="_blank">Service cartographie</a>
+                    ANCT, <a href = 'https://cartotheque.anct.gouv.fr/cartes' target="_blank">Cartographes</a> du pôle Analyse & diagnostics territoriaux - 01/2021
                 </p>
-                <p>Technologies utilisées : Leaflet, Bootstrap, VueJS</p>
-                <p>Le code source de cet outil est libre et consultable sur <a href="https://www.github.com/anct-carto/pvd" target="_blank">Github</a>.</p>
+                <p>Technologies utilisées: Leaflet, Bootstrap, VueJS</p>
+                <p>Le code source de cet outil est libre et consultable sur Github (accès via le bouton de la barre latérale).</p>
             </div>
         </div>
     </div>`,
@@ -405,20 +361,13 @@ let leafletMap = {
                 }
             },
             cardContent:null,
+            layerGroup:null,
             dep_geom:null,
             reg_geom:null,
         }
     },
     components: {
         'leaflet-sidebar':leafletSidebar,
-    },
-    computed: {
-        maskLayer() {
-            return L.layerGroup({ className: 'mask-layer' }).addTo(this.map);
-        },
-        pinLayer() {
-            return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
-        }
     },
     methods: {
         initMap() {
@@ -451,13 +400,27 @@ let leafletMap = {
                 div.innerHTML = radioSwitch.template;
                 return div;
             };
-            // toggleLayer.addTo(this.map)
+            toggleLayer.addTo(this.map);
 
             // prevent drag over the sidebar and the legend
             preventDrag(sidebar, this.map);
+            
+            function preventDrag(div, map) {
+                // Disable dragging when user's cursor enters the element
+                div.getContainer().addEventListener('mouseover', function () {
+                    map.dragging.disable();
+                });
+
+                // Re-enable dragging when user's cursor leaves the element
+                div.getContainer().addEventListener('mouseout', function () {
+                    map.dragging.enable();
+                });
+            };
         },
         onClick(i) {
             lib_com = i.lib_com;
+            let layer = L.layerGroup({}).addTo(this.map);
+            this.layerGroup = layer;
             if(!marker) {
                 marker = new L.marker([i.latitude, i.longitude]);
                 circle = new L.circleMarker([i.latitude, i.longitude], this.clickedMarker.options).addTo(this.map)
@@ -467,31 +430,28 @@ let leafletMap = {
                 marker.setTooltipContent(lib_com)
                 circle.setLatLng([i.latitude, i.longitude])
             };
-            this.pinLayer.addLayer(marker);
-            this.pinLayer.addLayer(circle);
+            layer.addLayer(marker);
+            layer.addLayer(circle);
             // send value to children
-            this.cardContent = i;
+            this.cardContent = [i];
             this.sidebar.open("home");
         },
         onSearchResultReception(e) {
             this.onClick(e);
-            this.maskLayer.clearLayers();
             this.map.flyTo([e.latitude, e.longitude], 10, {duration: 1});
         },
         removeClickedMarker() {
             this.cardContent = '';
-            this.pinLayer.clearLayers();
-            this.maskLayer.clearLayers();
-            this.map.flyTo(this.mapOptions.center, this.mapOptions.zoom, { duration: 1});
+            this.map.removeLayer(this.layerGroup);
+            this.map.flyTo(this.mapOptions.center, this.mapOptions.zoom, { duration: 1})
         },
         flyToBoundsWithOffset(layer) {
             offset = document.querySelector('.leaflet-sidebar-content').getBoundingClientRect().width;
-            this.map.flyToBounds(layer, { paddingTopLeft: [offset, 0] });
+            this.map.flyToBounds(layer, { paddingTopLeft: [offset, 0] })
         },
         getPropSymbols(geom, insee_id, tooltipContent) {
             // geom : geojson object
-            // insee_id : id of the feature 
-            // tooltipContent : column used for the insee_id of the feature 
+            // insee_id: 
 
             // 1/ get unique insee_ids
             let ids = Array.from(new Set(spreadsheet_res.map(( { insee_id } ) => insee_id)));
@@ -527,19 +487,32 @@ let leafletMap = {
             geom_nb_pvd = new L.GeoJSON(geom, {
                 pointToLayer: (feature, latlng) => {
                     return L.circleMarker(latlng, {
-                        radius:Math.sqrt(feature.properties.nb)*(35/Math.sqrt(max)),
+                        radius:Math.sqrt(feature.properties.nb)*(30/Math.sqrt(max)),
                     }).bindTooltip(
                         String(feature.properties[tooltipContent]).toUpperCase() + 
                         "<br>" + + feature.properties.nb + "<span class='leaflet-tooltip-info'> communes</span>",
                     this.tooltipOptions)
                     .on("click", e=> {
-                        this.onClickOnPropSymbols(e, insee_id, tooltipContent)
-                        // this.flyToBoundsWithOffset(e)
-                        // if(tooltipContent.match("reg")) {
-                        //     this.map.flyTo(e.latlng,8, {duration:.5})
-                        // } else {
-                        //     this.map.flyTo(e.latlng,9.5, {duration:.5})
-                        // }
+                        if(tooltipContent.match("reg")) {
+                            id = e.sourceTarget.feature.properties.insee_reg;
+                            test = this.geom_reg.features.filter(d => {
+                                return d.properties.insee_reg === id
+                            });
+                            // this.map.flyTo(e.latlng,8, {duration:.5})
+                        } else {
+                            id = e.sourceTarget.feature.properties.insee_dep;
+                            test = this.geom_dep.features.filter(d => {
+                                return d.properties.insee_dep === id
+                            });
+                            // this.map.flyTo(e.latlng,9.5, {duration:.5})
+                        };
+                        
+                        this.cardContent = spreadsheet_res.filter(e => {
+                            return e.insee_dep == id
+                        });
+                        console.log(this.cardContent);
+                        test = new L.GeoJSON(test, { style: { fillOpacity: 0, color: 'red' } }).addTo(this.map);
+                        this.flyToBoundsWithOffset(test);
                     });
                 },
                 onEachFeature: function(feature, layer) {
@@ -556,37 +529,11 @@ let leafletMap = {
 
             return geom_nb_pvd;
         },
-        onClickOnPropSymbols(e, insee_id, tooltipContent) {
-            // clear content displayed on card
-            this.cardContent = '';
-            this.pinLayer.clearLayers(); // clear pin layer of previous search
-            this.maskLayer.clearLayers(); 
-
-            // get the value to filter geom features
-            let id = e.sourceTarget.feature.properties[insee_id];
-
-            // get the correct geometry(dep ou reg) based on tooltip content
-            tooltipContent.match("reg") ? geom = this.geom_reg : geom = this.geom_dep;
-            let geomBounds = geom.features.filter(d => {
-                return d.properties[insee_id] === id
-            });
-
-            // this.cardContent = spreadsheet_res.filter(e => {
-            //     return e[insee_id] == id
-            // });
-
-            this.flyToBoundsWithOffset(new L.GeoJSON(geomBounds));
-            
-            let mask = L.mask(geomBounds, { color: 'red', fillColor: "rgba(0,0,0,.25)" });
-            this.maskLayer.addLayer(mask);
-            // this.map.on("zoomend", () => {
-            //     this.maskLayer.clearLayers();
-            // });
-        },
         checkPageStatus() {
             if(page_status == undefined) {
                 window.setTimeout(this.checkPageStatus,5);
             } else {
+                console.log(spreadsheet_res);
 
                 let reg_layer = L.layerGroup();
                 let dep_layer = L.layerGroup();
@@ -613,9 +560,7 @@ let leafletMap = {
                 map = this.map;
                 map.addLayer(reg_layer)
 
-                map.on("zoom", zoomLayerControl);
-
-                function zoomLayerControl() {
+                map.on("zoom", () => {
                     let zoom_level = map.getZoom();
 
                     // control layer to display 
@@ -625,22 +570,21 @@ let leafletMap = {
                             map.removeLayer(dep_layer);
                             map.removeLayer(pts_layer);
                             break;
-
-                        case (zoom_level > 6.5 && zoom_level < 9):
+                            
+                        case (zoom_level > 6.5 && zoom_level <9) :
                             map.addLayer(dep_layer);
                             map.removeLayer(reg_layer);
                             map.removeLayer(pts_layer);
                             break;
-
+                        
                         case (zoom_level >= 9):
                             map.addLayer(pts_layer);
                             map.removeLayer(dep_layer);
                             map.removeLayer(reg_layer);
                             break;
                     }
-                };
 
-                
+                });                
                 setTimeout(() => {
                     this.sidebar.open('home');
                     // change center to get map offset when sidebar is open
@@ -696,7 +640,7 @@ let leafletMap = {
                             weight:1.25,
                             color:'white'
                         }
-                    }).addTo(map)
+                    }).addTo(map);
 
 
                     geom_epci = new L.GeoJSON(res[5], {
@@ -707,7 +651,7 @@ let leafletMap = {
                             weight:0.2,
                             color:'white'
                         }
-                    }).addTo(map)
+                    }).addTo(map);
 
                     labelReg = new L.GeoJSON(res[6], {
                         pointToLayer: function (feature, latlng) {
@@ -752,28 +696,27 @@ let leafletMap = {
                         }
                       });
 
-                    };
-                    function createLabelIcon(labelClass,labelText) {
+                    function createLabelIcon(labelClass,labelText){
                         return L.divIcon({
-                        className: svgText(labelClass),
-                        html: svgText(labelText)
-                    })
+                            className: svgText(labelClass),
+                            html: svgText(labelText)
+                        })
+                    };
                     function svgText(txt) {
                         return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text x="0" y = "10">'
-                                + txt + '</text></svg>';
-                    }
-                      
+                        + txt + '</text></svg>';
+                    };                      
                 }
             }).catch((err) => {
                 console.log(err);
               });;
         },
         init() {
-            Papa.parse(data_url, {
-                download: true,
-                header: true,
-                complete: (results) => this.fetchSpreadsheetData(results.data)
-            });
+            Tabletop.init({
+              key: data_url,
+              callback: this.fetchSpreadsheetData,
+              simpleSheet: true
+            })
         },
         fetchSpreadsheetData(res) {
             fetch("data/geom_com2020.geojson")
@@ -844,17 +787,3 @@ let vm = new Vue({
 
 // ****************************************************************************
 // ****************************************************************************
-// fonctions
-
-
-function preventDrag(div, map) {
-    // Disable dragging when user's cursor enters the element
-    div.getContainer().addEventListener('mouseover', function () {
-        map.dragging.disable();
-    });
-
-    // Re-enable dragging when user's cursor leaves the element
-    div.getContainer().addEventListener('mouseout', function () {
-        map.dragging.enable();
-    });
-};
