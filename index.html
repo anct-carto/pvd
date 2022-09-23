@@ -23,25 +23,15 @@
     <script src="lib/leaflet-1.7/leaflet.js"></script>
     <script src="lib/leaflet-sidebar.min.js"></script>
     <script src="lib/leaflet.mask.js"></script>
+    <link rel="stylesheet" href="lib/leaflet.fullscreen.css">
     <script src="lib/Leaflet.fullscreen.min.js"></script>
     <!-- import data -->
     <script src='lib/papaparse.min.js'></script>
 
   </head>
   <body>
-    <div id = "loading" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
-      <!-- <img src="img/logo_FranceServices-01.png" style="width:200px;background-color: white;"> -->
-      <div class="row">
-        <div class="spinner-border" role="status">
-          <p class="sr-only">Loading...</p>
-        </div>
-      </div>
-      <div class="row">
-        <p>Chargement en cours ...</p>
-      </div>
-    </div>
     <div id="app">
-      <leaflet-map ref = "map"></leaflet-map>
+      <app></app>
     </div>
     <!-- chargement script js -->
     <script src= "src/app.js"></script>

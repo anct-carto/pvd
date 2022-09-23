@@ -5,17 +5,50 @@
 */
 
 
-const loading = document.getElementById("loading");
 const data_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOLYK3fGTi0MyoFY4iAz9zDsXFy7_t-dni9ijNBKnVZTW540K73BXDYCeUGJN80hXqCqscqX9xO19v/pub?output=csv"
 let spreadsheet_res = [];
 let tab = JSON.parse(sessionStorage.getItem("session_data"));
 let page_status;
 
+// ****************************************************************************
+// écran chargement 
+
+class LoadingScreen {
+    constructor() {
+        this.state = {
+            isLoading:false
+        }
+    }
+    show() {
+        this.state.isLoading = true
+    }
+    hide() {
+        this.state.isLoading = false
+    }
+}
+
+let loadingScreen = new LoadingScreen();
+
+
+// écran de chargement
+const Loading = {
+    template: `
+    <div id = "loading" class="w-100 h-100 d-flex flex-column justify-content-center align-items-center">
+        <div class="row">
+            <div class="spinner-border" role="status">
+                <p class="sr-only">Loading...</p>
+            </div>
+        </div>
+        <div class="row">
+            <p>Chargement en cours ...</p>
+        </div>
+    </div>
+    `
+}
 
 // ****************************************************************************
-// ****************************************************************************
 
-let searchBar = {
+const SearchBar = {
     template: `
             <div id="search-bar-container">
                 <div class="input-group">
@@ -299,7 +332,7 @@ let leafletSidebar = {
         </div>
     </div>`,
     components: {
-        'search-group':searchBar,
+        'search-group':SearchBar,
         card: cardTemplate,
         'text-intro':introTemplate
     },
@@ -343,7 +376,7 @@ let circle;
 // init vue-leaflet
 // let { LMap, LTileLayer, LControlZoom, LMarker, LCircleMarker, LGeoJson, LTooltip, LIcon } = Vue2Leaflet;
 
-let leafletMap = {
+const LeafletMap = {
     template: `
         <div>
             <leaflet-sidebar ref="sidebar" :fromParent="cardContent" @clearMap="removeClickedMarker()" @searchResult="onSearchResultReception"></leaflet-sidebar>
@@ -800,18 +833,19 @@ let leafletMap = {
                     com_geom.forEach(e => spreadsheet_res.push(e.properties))
                     sessionStorage.setItem("session_data", JSON.stringify(spreadsheet_res))
                     page_status = "loaded";
-                    loading.remove();
-            });
+                    loadingScreen.hide() // enlève le chargement d'écran
+                });
         }
 
     },
     mounted() {
+        loadingScreen.show() // pendant le chargement, active le chargement d'écran
         if(tab) {
             spreadsheet_res = tab;
             console.info("Loading from session storage");
             setTimeout(() => {                
                 page_status = "loaded";
-                loading.remove();
+                loadingScreen.hide() // enlève le chargement d'écran
             }, 300);
         } else {
             this.init(); // load data
@@ -820,7 +854,8 @@ let leafletMap = {
         this.initMap(); // load map
         this.loadDepGeom(); // load dep geojson
         this.checkPageStatus(); // remove loading spinner and load data
-        // this.onClick(spreadsheet_res[1])
+
+        // loadingScreen.hide() // enlève le chargement d'écran
     },
 }
 
@@ -829,15 +864,29 @@ let leafletMap = {
 // ****************************************************************************
 // ****************************************************************************
 
+const App = {
+    template: 
+        `<div>
+            <loading id="loading" v-if="state.isLoading"></loading>
+            <leaflet-map ref="map"></leaflet-map>
+        </div>
+    `,
+    components: {
+        'leaflet-map': LeafletMap,
+        'loading':Loading,
+    },
+    data() {
+        return {
+            state:loadingScreen.state 
+        }
+    }
+}
 
 // instance vue
-let vm = new Vue({
+new Vue({
     el: '#app',
     components: {
-        'leaflet-map': leafletMap,
-    },
-    methods: {
-
+        'app': App,
     },
 });
 
