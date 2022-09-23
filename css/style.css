@@ -52,6 +52,14 @@ body i {
 	position: absolute;
 }
 
+/* longueur */
+@media (min-width: 1200px) {
+	.leaflet-sidebar, .leaflet-sidebar-header {
+		width: 550px;
+		max-width: 550px;
+	}
+}
+
 .leaflet-sidebar-header {
 	background-color: var(--color-programme);
 	font-family: 'Marianne-Bold';

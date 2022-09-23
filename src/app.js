@@ -7,8 +7,42 @@
 
 const data_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOLYK3fGTi0MyoFY4iAz9zDsXFy7_t-dni9ijNBKnVZTW540K73BXDYCeUGJN80hXqCqscqX9xO19v/pub?output=csv"
 let spreadsheet_res = [];
-let tab = JSON.parse(sessionStorage.getItem("session_data"));
+// let tab = JSON.parse(sessionStorage.getItem("session_data"));
 let page_status;
+
+// Chargement données globales ****************************************************************************
+
+// source données
+const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/a43bb3ce-8dfb-4503-a9d2-a9c636273235"
+
+// charge depuis session storage ou fetch
+async function getData(path) {
+    const sessionData = JSON.parse(sessionStorage.getItem("session_data1"));
+    if(sessionData) {
+        return sessionData
+    } else {
+        try {
+            const data = await fetchCsv(path)
+            sessionStorage.setItem('session_data1',JSON.stringify(data));
+            return data
+        } catch (error) {
+            console.error(error)
+        }
+    }
+}
+
+// parse csv (ou tableau issu d'un tableau partagé) en json
+function fetchCsv(data_url) {
+    return new Promise((resolve,reject) => {
+        Papa.parse(data_url, {
+            download: true,
+            header: true,
+            complete: (res) => resolve(res.data.filter(e => e.insee_com != "")),
+            error:(err) => reject(err)
+        });
+    })
+}
+
 
 // ****************************************************************************
 // écran chargement 
@@ -48,18 +82,14 @@ const Loading = {
 
 // ****************************************************************************
 
+// composant "barre de recherche"
 const SearchBar = {
     template: `
             <div id="search-bar-container">
                 <div class="input-group">
-                    <span class="input-group-prepend">
-                        <div class="input-group-text bg-white border-right-0">
-                            <i class="fal fa-search form-control-icon"></i>
-                        </div>
-                    </span>
                     <input ref = "input" class="form-control shadow-none py-2 border-right-0 border-left-0"
                             id="search-field" type="search"
-                            placeholder="Saisissez un nom de commune" 
+                            placeholder="Rechercher une commune ..." 
                             v-model="inputAdress"
                             @keyup="onKeypress($event)" 
                             @keydown.down="onKeyDown"
@@ -73,7 +103,7 @@ const SearchBar = {
                                 @mouseover="onMouseover(i)"
                                 @mouseout="onMouseout(i)"
                                 :class="{ 'is-active': i === index }">
-                                    {{ suggestion.lib_com }} ({{ suggestion.insee_dep }})
+                                    {{ suggestion.lib_com }} ({{ suggestion.insee_com }})
                             </li>
                         </ul>
                     </div>
@@ -84,11 +114,8 @@ const SearchBar = {
             inputAdress:'',
             isOpen:false,
             suggestionsList:[],
-        }
-    },
-    computed: {
-        data() {
-            return spreadsheet_res
+            codeName:'insee_com',
+            libName:'lib_com'
         }
     },
     watch: {
@@ -97,12 +124,25 @@ const SearchBar = {
                 this.isOpen = !this.isOpen;
                 this.index = 0;
                 this.suggestionsList = [];
-                // this.$emit('searchResult',' ') // reinitialize map
             }
         }
     },
+    async mounted() {
+        document.addEventListener("click", this.handleClickOutside);
+        document.addEventListener("keyup", (e) => {
+            if(e.key === "Escape") {
+                this.isOpen = false;
+                this.index = -1;
+
+            }
+        });
+        this.data = await getData(dataUrl)
+    },
+    destroyed() {
+        document.removeEventListener("click", this.handleClickOutside);
+    },
     methods: {
-        onKeypress(e) {
+        onKeypress() {
             this.isOpen = true;
             let val = this.inputAdress;
 
@@ -114,17 +154,17 @@ const SearchBar = {
 
             if (val != undefined && val != '') {
                 result = this.data.filter(e => {
-                    return e.lib_com.toLowerCase().includes(val.toLowerCase())
+                    return e[this.libName].toLowerCase().replace(/-/g," ").includes(val.toLowerCase())
                 });
                 this.suggestionsList = result.slice(0,6);
             }
         },
-        onKeyUp(e) {
+        onKeyUp() {
             if (this.index > 0) {
                 this.index = this.index - 1;
             };
         },
-        onKeyDown(e) {
+        onKeyDown() {
             if (this.index < this.suggestionsList.length) {
                 this.index = this.index + 1;
             }
@@ -132,23 +172,25 @@ const SearchBar = {
         onMouseover(e) {
             this.index = e;
         },
-        onMouseout(e) {
+        onMouseout() {
             this.index = -1;
         },
         onEnter() {
-            this.isOpen = !this.isOpen;
-            this.inputAdress = this.suggestionsList[this.index].lib_com;
-            
-            suggestion = this.suggestionsList[this.index];
-            
-            this.suggestionsList = [];
-            this.index = -1;
-            
-            this.$emit('searchResult',suggestion)
+            if(this.suggestionsList[this.index]) {
+                this.inputAdress = this.suggestionsList[this.index][this.libName];
+                
+                suggestion = this.suggestionsList[this.index];
+                this.$emit('searchResult',suggestion)
+
+                this.suggestionsList = [];
+                this.isOpen = !this.isOpen;
+                this.index = -1;                
+            }
         },
         onClickSuggest(suggestion) {            
+            event.stopPropagation()
             // reset search
-            this.inputAdress = suggestion.lib_com;
+            this.inputAdress = suggestion[this.libName];
             
             this.suggestionsList = [];
             this.isOpen = !this.isOpen;
@@ -162,17 +204,12 @@ const SearchBar = {
             }
         }
     },
-    mounted() {
-        document.addEventListener("click", this.handleClickOutside);
-    },
-    destroyed() {
-        document.removeEventListener("click", this.handleClickOutside);
-    }
-
 };
 
+// ****************************************************************************
 
-let introTemplate = {
+
+const IntroTemplate = {
     template: `
     <div>
         <div>
@@ -207,7 +244,10 @@ let introTemplate = {
     </div>`
 };
 
-let cardInfoTemplate = {
+// ****************************************************************************
+
+
+const CardInfoTemplate = {
     props: ['subtitle', 'element'],
     template:`
         <p v-if="element">
@@ -217,7 +257,7 @@ let cardInfoTemplate = {
     `,
 };
 
-let radioSwitch = {
+const RadioSwitch = {
     template: `
     <div class="btn-group-vertical">
         <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
@@ -228,26 +268,29 @@ let radioSwitch = {
     `,
 }
 
-let cardTemplate = {
+const CardTemplate = {
     template:`
         <div class="card">
             <div class= "card-header">
-                <span>{{ pvd.lib_com }} ({{ pvd.insee_dep }})</span>
+                <span>{{ obs.lib_com }} ({{ obs.insee_dep }})</span>
             </div>
             <div class= "card-body">
-                <info subtitle="Nombre d'habitants en 2017" :element="pvd.pop"></info>
-                <info subtitle="Département" :element="pvd.lib_dep + ' (' + pvd.insee_dep + ')'"></info>
-                <info subtitle="Région" :element="pvd.lib_reg"></info>
-                <info subtitle="EPCI" :element="pvd.lib_epci"></info>
+                <info subtitle="Nombre d'habitants en 2017" :element="obs.pop"></info>
+                <info subtitle="Département" :element="obs.lib_dep + ' (' + obs.insee_dep + ')'"></info>
+                <info subtitle="Région" :element="obs.lib_reg"></info>
+                <info subtitle="EPCI" :element="obs.lib_epci"></info>
             </div>
         </div>`,
-    props: ['pvd'],
+    props: ['obs'],
     components: {
-        'info':cardInfoTemplate,
+        'info':CardInfoTemplate,
     }
 };
 
-let leafletSidebar = {
+// ****************************************************************************
+
+
+const LeafletSidebar = {
     template: ` 
     <div id="sidebar" class="leaflet-sidebar collapsed">
         <!-- nav tabs -->
@@ -279,7 +322,7 @@ let leafletSidebar = {
                     <text-intro></text-intro>
                 </div>
                 <div>
-                    <card :pvd="cardContent" v-if="show"></card><br>
+                    <card :obs="cardContent" v-if="show"></card><br>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
                         <i class="fa fa-chevron-left"></i>
                         Retour à l'accueil
@@ -333,10 +376,10 @@ let leafletSidebar = {
     </div>`,
     components: {
         'search-group':SearchBar,
-        card: cardTemplate,
-        'text-intro':introTemplate
+        card: CardTemplate,
+        'text-intro':IntroTemplate
     },
-    props: ['fromParent'],
+    props: ['sourceData'],
     data() {
         return {
             show:false,
@@ -344,11 +387,9 @@ let leafletSidebar = {
         }
     },
     watch: {
-        fromParent() {
-            this.cardContent = this.fromParent;
-            if(this.fromParent) {
-                this.show = true;
-            }
+        sourceData() {
+            this.cardContent = this.sourceData;
+            this.cardContent ? this.show = true : this.show = false
         },
     },
     computed: {
@@ -371,12 +412,313 @@ let leafletSidebar = {
 let marker;
 let circle;
 
+const LeafletMap = {
+    template: `
+        <div>
+            <sidebar 
+                ref="sidebar" 
+                :sourceData="cardContent" 
+                @clearMap="clearMap()" 
+                @searchResult="onSearchResultReception">
+            </sidebar>
+            <div id="mapid"></div>
+    </div>`,
+    components: {
+        'sidebar':LeafletSidebar,
+    },
+    data() {
+        return {
+            config:{
+                map:{
+                    container:'mapid',
+                    tileLayer:'',
+                    attribution:"<a href = 'https://cartotheque.anct.gouv.fr/' target = '_blank'>ANCT</a>",
+                    zoomPosition:'topright',
+                    scalePosition:'bottomright',
+                    initialView:{
+                        zoomControl:false,
+                        zoom: 6,
+                        center: [46.413220, 1.219482],
+                        zoomSnap: 0.05,
+                        minZoom:4.55,
+                        maxZoom:18,
+                        preferCanvas:true,
+                    }
+                },
+                sidebar:{
+                    container: "sidebar",
+                    autopan: true,
+                    closeButton: true,
+                    position: "left",
+                },
+            },
+            styles:{
+                basemap:{
+                    dep:{
+                        interactive:false,
+                        style: {
+                            fillColor:"#c0cf8b",
+                            fillOpacity:1,
+                            color:"white",
+                            weight:0.5,
+                            opacity:1,
+                        },
+                    },
+                    reg:{
+                        interactive:false,
+                        style: {
+                            fillOpacity:0,
+                            weight:1.25,
+                            color:'white'
+                        },
+                    },
+                    epci:{
+                        interactive:false,
+                        style: {
+                            fillColor:"#a2b74c",
+                            fillOpacity:1,
+                            color:"white",
+                            weight:0.25,
+                            opacity:1,
+                        },
+                    },
+                    drom:{
+                        interactive:false,
+                        style: {
+                            fillOpacity:0,
+                            weight:0.5,
+                            color:'#293173'
+                        },
+                    }
+                },
+                categories:{
+                    colors:['#f69000'],
+                    values:["pvd"],
+                    labels:["Petites villes de demain"],
+                },
+                features:{
+                    default:{
+                        radius:5,
+                        fill:true,
+                        fillOpacity:1,
+                        color:"white",
+                        weight:1,
+                    },
+                    clicked:{
+                        radius:10,
+                        fillOpacity:1,
+                        color:"white",
+                        opacity:0.75,
+                        weight:7,
+                    },
+                },
+                tooltip:{
+                    default:{
+                        direction:"top",
+                        sticky:true,
+                        className:'leaflet-tooltip',
+                        opacity:1,
+                        offset:[0,-15],
+                        permanent:false
+                    },
+                    clicked:{
+                        direction:"top",
+                        className:'leaflet-tooltip-clicked',
+                    },
+                }
+            },
+            cardContent:null,
+        }
+    },
+    components: {
+        'sidebar':LeafletSidebar,
+    },
+    computed: {
+        map() {
+            const map = L.map(this.config.map.container, this.config.map.initialView);
+            map.attributionControl.addAttribution(this.config.map.attribution);            
+            // zoom control, scale bar, fullscreen 
+            L.control.zoom({position: this.config.map.zoomPosition}).addTo(map);
+            L.control.scale({ position: this.config.map.scalePosition, imperial:false }).addTo(map);
+            L.control.fullscreen({
+                position:'topright',
+                forcePseudoFullScreen:true,
+                title:'Afficher la carte en plein écran'
+            }).addTo(map);
+            // au clic, efface la recherche
+            map.on("click",() => {
+                event.stopPropagation();
+                this.clearMap();
+            })
+            // au zoom efface le calque (résolution d'un bug)
+            map.on("zoomend", () => this.hoveredLayer.clearLayers())
+            return map;            
+        },
+        sidebar() {
+            const sidebar = window.L.control.sidebar(this.config.sidebar).addTo(this.map);
+            // prevent drag over the sidebar and the legend
+            preventDrag(sidebar, this.map);
+            return sidebar
+        },
+        // calques : habillage, marqueurs, étiquettes, marqueur sélectionné
+        baseMapLayer() {
+            return L.layerGroup({className: 'basemap-layer',interactive:false}).addTo(this.map)
+        },
+        comLayer() {
+            return L.layerGroup({className: 'basemap-layer',interactive:false}).addTo(this.map)
+        },
+        hoveredLayer() {
+            return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
+        },
+        pinLayer() {
+            return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
+        },
+    },
+    async mounted() {
+        loadingScreen.show() // pendant le chargement, active le chargement d'écran
+        await this.createBasemap(); // créé les géométries d'habillage !!! ne fonctionne pas avec les tuiles vectorielles !!!!
+        // this.displayToponym(); // affiche les toponymes d'habillage
 
+        this.data = await getData(dataUrl); // charge les données
+        this.comGeom = await this.loadGeom("data/geom_com2020.geojson") // charge les géométries de travail 
+        this.joinedData = this.joinGeom(this.data,this.comGeom)
+        console.log(this.joinedData);
+        this.createFeatures(this.joinedData); // affiche les géométries de travail
+
+        loadingScreen.hide() // enlève le chargement d'écran
+    },
+    methods: {
+        async loadGeom(file) {
+            const res = await fetch(file);
+            const data = await res.json();
+            return data
+        },
+        // créer le fond de carte (limite dép/reg/ ce que tu veux bref)
+        async createBasemap() {
+            const depGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson");
+            const regGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson");
+            const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
+            const cerclesDromGeom = await this.loadGeom("data/cercles_drom.geojson");
+
+            new L.GeoJSON(depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
+            new L.GeoJSON(regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
+            new L.GeoJSON(epciGeom, this.styles.basemap.epci).addTo(this.baseMapLayer);
+            new L.GeoJSON(cerclesDromGeom,this.styles.basemap.drom).addTo(this.baseMapLayer);
+        },
+        displayToponym() {
+            this.loadGeom("data/labels.geojson").then(labelGeom => {
+                // déclaration des objets "map" et "layer" comme constantes obligatoire sinon inconnu dans le zoomend avec "this"
+                const map = this.map;
+                const labelLayer = this.labelLayer;
+                
+                LToponym(labelGeom,"région").addTo(labelLayer);
+                const labelDep = LToponym(labelGeom,"département");
+                const labelCan = LToponym(labelGeom,"canton");
+
+                // ajout/suppression étiquettes reg ou dep en fonction du zoom
+                map.on('zoomend', function() {
+                    let zoom = map.getZoom();
+                    switch (true) {
+                      case zoom <= 6 :
+                        [labelDep,labelCan].forEach(layer => layer.removeFrom(labelLayer))
+                        break;
+                      case zoom > 6 && zoom <=9:
+                        labelDep.addTo(labelLayer);
+                        labelCan.removeFrom(labelLayer);
+                        break;
+                      case zoom > 9 :
+                        labelCan.addTo(labelLayer);
+                        break;
+                    }
+                });
+            })
+        },
+        // jointure entre attributs et géométries
+        joinGeom(attributs,geometries) {
+            let arr2Map = attributs.reduce((acc, curr) => {
+                acc[curr.insee_com] = {properties:curr}
+                return acc;
+            }, {});
+            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties.insee_com]));
+            combined = combined.filter(e => this.data.map(e=>e.insee_com).includes(e.properties.insee_com))
+            return combined
+        },
+        createFeatures(geomData) {
+            const styleDefault = this.styles.features.default;
+            const styleTooltipDefault = this.styles.tooltip.default;
+            const getColor = (e) => this.getColor(e);
+
+            for(let i=0;i<geomData.length;i++) {
+                let marker = new L.GeoJSON(geomData[i], {
+                    filter:(feature) => this.data.map(e=>e.insee_com).includes(feature.properties.insee_com),
+                    pointToLayer: function (feature, latlng) {
+                        let circleMarker = L.circleMarker(latlng, styleDefault);
+                        circleMarker.setStyle({fillColor:getColor("pvd")});
+                        circleMarker.bindTooltip(feature.properties.lib_com,styleTooltipDefault);
+                        return circleMarker
+                    },
+                }).on("mouseover", (e) => {
+                    e.target.setStyle(this.styles.features.clicked)
+                }).on("mouseout",(e) => {
+                    e.target.setStyle(styleDefault)
+                }).on("click", (e) => {
+                    L.DomEvent.stopPropagation(e);
+                    this.onClick(e.sourceTarget.feature.properties.insee_com)
+                });
+                marker.addTo(this.comLayer);
+            }
+            setTimeout(() => this.sidebar.open('home'), 100);
+        },
+        onClick(code) {
+            // vide la couche si pleine
+            this.pinLayer.clearLayers();
+            
+            // // envoie les infos de l'élément sélectionné au composant "fiche"
+            let content = this.data.find(e => e.insee_com == code);
+            this.cardContent = content;
+
+            // retrouve la géométrie
+            let coordsResult = this.comGeom.features.find(e => e.properties.insee_com == code).geometry.coordinates.reverse();
+
+            // style à appliquer
+            let glow = new L.circleMarker(coordsResult,this.styles.features.clicked).addTo(this.pinLayer);
+            let circle = new L.circleMarker(coordsResult,this.styles.features.default).addTo(this.pinLayer);
+            circle.setStyle({fillColor:this.getColor("pvd")});
+            glow.setStyle({fillColor:this.getColor("pvd")});
+
+            this.sidebar.open("home");
+        },
+        stylishTooltip(marker) {
+            return `<span style="background-color:${this.getColor("pvd")}">${marker.lib_com}</span>`
+        },
+        onSearchResultReception(result) {
+            this.onClick(result.insee_com);
+        },
+        clearMap() {
+            this.cardContent = null;
+            this.pinLayer.clearLayers();
+        },
+        flyToBoundsWithOffset(layer) {
+            // cette fonction est utile pour faire décaler le centre de la carte sur le côté droit si le panneau est ouvert
+            let offset = document.querySelector('.leaflet-sidebar-content').getBoundingClientRect().width;
+            this.map.flyToBounds(layer, { paddingTopLeft: [offset, 0] });
+        },
+        getColor(type) {
+            // cette fonction est utile pour récupérer la bonne couleur de chaque modalité préalablement déterminée
+            let color;
+            this.styles.categories.values.forEach((v,i) => {
+                if(v === type) color = this.styles.categories.colors[i]
+            })
+            return color
+        },
+    },
+}
 
 // init vue-leaflet
 // let { LMap, LTileLayer, LControlZoom, LMarker, LCircleMarker, LGeoJson, LTooltip, LIcon } = Vue2Leaflet;
 
-const LeafletMap = {
+
+const LeafletMap1 = {
     template: `
         <div>
             <leaflet-sidebar ref="sidebar" :fromParent="cardContent" @clearMap="removeClickedMarker()" @searchResult="onSearchResultReception"></leaflet-sidebar>
@@ -384,6 +726,105 @@ const LeafletMap = {
         </div>`,
     data() {
         return {
+            // //////////////////////////////////////////////
+            config:{
+                map:{
+                    container:'mapid',
+                    tileLayer:'',
+                    attribution:"<a href = 'https://cartotheque.anct.gouv.fr/' target = '_blank'>ANCT</a>",
+                    zoomPosition:'topright',
+                    scalePosition:'bottomright',
+                    initialView:{
+                        zoom: 6,
+                        center: [46.413220, 1.219482],
+                        // zoomSnap: 0.05,
+                        minZoom:4.55,
+                        maxZoom:18,
+                        preferCanvas:true,
+                    }
+                },
+                sidebar:{
+                    container: "sidebar",
+                    autopan: true,
+                    closeButton: true,
+                    position: "left",
+                },
+            },
+            styles:{
+                basemap:{
+                    dep:{
+                        interactive:false,
+                        style: {
+                            fillColor:"#BFCD9C",
+                            color:"white",
+                            weight:0.5,
+                            opacity:1
+                        },
+                    },
+                    reg:{
+                        interactive:false,
+                        style: {
+                            fillOpacity:0,
+                            weight:1.25,
+                            color:'white'
+                        },
+                    },
+                    epci:{
+                        interactive:false,
+                        style:{
+                            fillOpacity:1,
+                            fillColor:"rgba(156,185,77,.1)",
+                            weight:0.2,
+                            color:'white',
+                        }
+                    },
+                    drom:{
+                        interactive:false,
+                        style: {
+                            fillOpacity:0,
+                            weight:0.5,
+                            color:'#293173'
+                        },
+                    }
+                },
+                categories:{
+                    colors:['#f69000','#239ad7',"#469c8b","#e0255b","#42b066","blue","#f18541","#b43070","red",'#293173',"#616db0","#42b066"],
+                    values:["pvd", "ti","crte","acv", "ami","fabp","habinclus","cite","cde","fs","passnum","amm"],
+                    labels:[],
+                },
+                features:{
+                    default:{
+                        fill:true,
+                        fillColor:'#5770be',
+                        fillOpacity:0.5,
+                        color:"white",
+                        weight:0.25,
+                    },
+                    clicked:{
+                        radius:10,
+                        fillOpacity:1,
+                        color:"white",
+                        opacity:0.75,
+                        weight:7,
+                    },
+                },
+                tooltip:{
+                    default:{
+                        direction:"top",
+                        sticky:true,
+                        className:'leaflet-tooltip',
+                        opacity:1,
+                        offset:[-10,-35],
+                        permanent:true
+                    },
+                    clicked:{
+                        direction:"top",
+                        className:'leaflet-tooltip-clicked',
+                    },
+                }
+            },
+            cardContent:null,
+            // //////////////////////////////////////////////
             mapOptions: {
                 zoom: 6,
                 attribution: 'Fond cartographique &copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy;, contributeurs <a href="http://openstreetmap.org">OpenStreetMap</a>',
@@ -443,9 +884,35 @@ const LeafletMap = {
         }
     },
     components: {
-        'leaflet-sidebar':leafletSidebar,
+        'leaflet-sidebar':LeafletSidebar,
     },
     computed: {
+        map() {
+            const map = L.map(this.config.map.container, this.config.map.initialView);
+            map.attributionControl.addAttribution(this.config.map.attribution);            
+            // zoom control, scale bar, fullscreen 
+            L.control.zoom({position: this.config.map.zoomPosition}).addTo(map);
+            L.control.scale({ position: this.config.map.scalePosition, imperial:false }).addTo(map);
+            L.control.fullscreen({
+                position:'topright',
+                forcePseudoFullScreen:true,
+                title:'Afficher la carte en plein écran'
+            }).addTo(map);
+            // au clic, efface la recherche
+            map.on("click",() => {
+                event.stopPropagation();
+                this.clearMap();
+            })
+            // au zoom efface le calque (résolution d'un bug)
+            map.on("zoomend", () => this.hoveredLayer.clearLayers())
+            return map;            
+        },
+        sidebar() {
+            const sidebar = window.L.control.sidebar(this.config.sidebar).addTo(this.map);
+            // prevent drag over the sidebar and the legend
+            preventDrag(sidebar, this.map);
+            return sidebar
+        },
         maskLayer() {
             return L.layerGroup({ className: 'mask-layer' }).addTo(this.map);
         },
@@ -453,42 +920,26 @@ const LeafletMap = {
             return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
         }
     },
+    mounted() {
+        loadingScreen.show() // pendant le chargement, active le chargement d'écran
+        if(tab) {
+            spreadsheet_res = tab;
+            console.info("Loading from session storage");
+            setTimeout(() => {                
+                page_status = "loaded";
+                loadingScreen.hide() // enlève le chargement d'écran
+            }, 300);
+        } else {
+            this.init(); // load data
+            console.info("Loading from drive");
+        };
+        // this.initMap(); // load map
+        this.loadDepGeom(); // load dep geojson
+        this.checkPageStatus(); // remove loading spinner and load data
+
+        // loadingScreen.hide() // enlève le chargement d'écran
+    },
     methods: {
-        initMap() {
-            this.map = L.map('mapid', this.mapOptions); // init map
-            // attribution
-            this.map.attributionControl
-            .addAttribution("<a href = 'https://cartotheque.anct.gouv.fr/' target = '_blank'>ANCT</a>");
-            
-            // zoom control, fullscreen & scale bar
-            L.control.zoom({position: 'topright'}).addTo(this.map);
-            L.control.fullscreen({
-                position:'topright',
-                forcePseudoFullScreen:true,
-                title:'Afficher la carte en plein écran'
-            }).addTo(this.map);
-            L.control.scale({ position: 'bottomright', imperial:false }).addTo(this.map);
-
-            // sidebar
-            const sidebar = window.L.control.sidebar({
-                autopan: true,
-                closeButton: true, 
-                container: "sidebar", 
-                position: "left" 
-            }).addTo(this.map);
-            this.sidebar = sidebar;
-
-            const toggleLayer = L.control({position: 'topleft'});
-            toggleLayer.onAdd = function (map) {
-                var div = L.DomUtil.create('div', 'leaflet-toggle-layer');
-                div.innerHTML = radioSwitch.template;
-                return div;
-            };
-            // toggleLayer.addTo(this.map)
-
-            // prevent drag over the sidebar and the legend
-            preventDrag(sidebar, this.map);
-        },
         onClick(i) {
             lib_com = i.lib_com;
             if(!marker) {
@@ -684,14 +1135,30 @@ const LeafletMap = {
                 }, 150);
             };
         },
+        async loadGeom(file) {
+            const res = await fetch(file);
+            const data = await res.json();
+            return data
+        },
+        async createBasemap() {
+            const depGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson");
+            const regGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson");
+            const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
+            const cerclesDromGeom = await this.loadGeom("data/cercles_drom.geojson");
+
+            new L.GeoJSON(depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
+            new L.GeoJSON(regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
+            new L.GeoJSON(epciGeom, this.styles.basemap.epci).addTo(this.baseMapLayer);
+            new L.GeoJSON(cerclesDromGeom,this.styles.basemap.drom).addTo(this.baseMapLayer);
+        },
         loadDepGeom() {
             promises = [];
-            promises.push(fetch("data/geom_dep.geojson"));
-            promises.push(fetch("data/geom_reg.geojson"));
+            promises.push(fetch("data/fr-drom-4326-pur-style1-dep.geojson"));
+            promises.push(fetch("data/fr-drom-4326-pur-style1-reg.geojson"));
             promises.push(fetch("data/cercles_drom.geojson"));
             promises.push(fetch("data/geom_ctr_dep.geojson"));
             promises.push(fetch("data/geom_ctr_reg.geojson"));
-            promises.push(fetch("data/geom_epci.geojson"));
+            promises.push(fetch("data/fr-drom-4326-pur-style1-epci.geojson"));
             promises.push(fetch("data/labels.geojson"));
 
             Promise.all(promises).then(async([a, b, c, d, e, f, g]) => {
@@ -838,25 +1305,6 @@ const LeafletMap = {
         }
 
     },
-    mounted() {
-        loadingScreen.show() // pendant le chargement, active le chargement d'écran
-        if(tab) {
-            spreadsheet_res = tab;
-            console.info("Loading from session storage");
-            setTimeout(() => {                
-                page_status = "loaded";
-                loadingScreen.hide() // enlève le chargement d'écran
-            }, 300);
-        } else {
-            this.init(); // load data
-            console.info("Loading from drive");
-        };
-        this.initMap(); // load map
-        this.loadDepGeom(); // load dep geojson
-        this.checkPageStatus(); // remove loading spinner and load data
-
-        // loadingScreen.hide() // enlève le chargement d'écran
-    },
 }
 
 
@@ -872,7 +1320,7 @@ const App = {
         </div>
     `,
     components: {
-        'leaflet-map': LeafletMap,
+        'leaflet-map':LeafletMap,
         'loading':Loading,
     },
     data() {
@@ -893,9 +1341,11 @@ new Vue({
 
 // ****************************************************************************
 // ****************************************************************************
-// fonctions
 
 
+// Fonctions universelles (utiles dans tous les projets)
+
+// empêcher déplacement de la carte en maintenant/glissant le pointeur de souris sur sidebar
 function preventDrag(div, map) {
     // Disable dragging when user's cursor enters the element
     div.getContainer().addEventListener('mouseover', function () {
@@ -907,3 +1357,29 @@ function preventDrag(div, map) {
         map.dragging.enable();
     });
 };
+
+// création d'étiquette de repères (chef lieux par ex) 
+function LToponym(sourceData,statut) {
+    return new L.GeoJSON(sourceData, {
+        pointToLayer: (feature,latlng) => L.marker(latlng, {
+            icon:createLabelIcon("labelClass", feature.properties.libgeom),
+            interactive: false,
+            className:"regLabels"
+        }),
+        filter:(feature) => feature.properties.STATUT == statut,
+        className:"labels",
+        rendererFactory: L.canvas()
+      })
+}
+
+function createLabelIcon(labelClass,labelText) {
+    return L.divIcon({
+        className: svgText(labelClass),
+        html: svgText(labelText)
+    })
+}
+
+function svgText(txt) {
+    return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><text x="0" y = "10">'
+        + txt + '</text></svg>';
+}
