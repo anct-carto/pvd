@@ -347,11 +347,12 @@ const LeafletSidebar = {
                         <card :obs="cardContent"></card>
                     </div>
                     <div v-else>
-                        <p ><b>{{ cardContent.length }}</b> communes</p>
+                        <h3>{{ cardContent.territoire }}</h3>
+                        <p ><b>{{ cardContent.results.length }}</b> communes</p>
                         <input class="form-control" type="search" 
                             placeholder="Filtrer par commune" 
                             id="searchField" v-model="search">
-                        <card-list  v-for="(obs,i) in cardContent"
+                        <card-list  v-for="(obs,i) in cardContent.results"
                                     :key="i" 
                                     :obs="obs" 
                                     class="mini-card"
@@ -866,9 +867,14 @@ const LeafletMap = {
             return propSymbols
         },
         onClickPropSymbols(feature,id) {
+            console.log(id.includes("reg"));
             // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
             let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
-            this.cardContent = results;
+            id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
+            this.cardContent = {
+                territoire:territoire,
+                results:results,
+            };
 
             // masque sélection autour du territoire
             this.maskLayer.clearLayers()
