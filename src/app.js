@@ -285,7 +285,7 @@ const CardTemplate = {
                 <span>{{ obs.lib_com }} ({{ obs.insee_dep }})</span>
             </div>
             <div class= "card-body">
-                <info subtitle="Nombre d'habitants en 2017" :element="obs.pop"></info>
+                <info subtitle="Nombre d'habitants en 2019" :element="obs.pop"></info>
                 <info subtitle="Département" :element="obs.lib_dep + ' (' + obs.insee_dep + ')'"></info>
                 <info subtitle="Région" :element="obs.lib_reg"></info>
                 <info subtitle="EPCI" :element="obs.lib_epci"></info>
@@ -457,7 +457,8 @@ const LeafletMap = {
                 ref="sidebar" 
                 :sourceData="cardContent" 
                 @clearMap="clearMap()" 
-                @searchResult="onSearchResultReception">
+                @searchResult="onSearchResultReception"
+                @closeSidebar="sidebar.close()">
             </sidebar>
             <div id="mapid"></div>
     </div>`,
