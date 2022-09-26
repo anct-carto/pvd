@@ -343,6 +343,7 @@ const LeafletSidebar = {
                         <card-list  v-for="(obs,i) in cardContent"
                                     :key="i" 
                                     :obs="obs" 
+                                    class="mini-card"
                                     @click.native="getResult(obs)">
                         </card-list>
                     </div>

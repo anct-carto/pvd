@@ -158,6 +158,10 @@ html, body, #mapid {
 /* 									SEARCH BAR						 		  */
 /* -------------------------------------------------------------------------- */
 
+.form-control {
+	margin-bottom: 10px;
+}
+
 #search-bar-container {
 	position: relative;
 	margin-bottom: 10px;
@@ -220,13 +224,9 @@ li {
 
 
 
-.fal {
-	align-items: center;
-}
-
-
 .card {
-	margin-top: 30px;
+	margin-bottom: 20px;
+	margin-top: 20px;
 	background-color: white;
 }
 
@@ -234,11 +234,22 @@ li {
 .card-header {
 	padding-top: 10px;
 	padding-bottom: 10px;
-	background-color: white;
-	color:var(--color-programme-second);
+	color: white;
+	background-color:var(--color-programme-second);
 	font-family: 'Marianne-Bold';
 	font-size: 1.6em;
-	border-bottom: 2px solid var(--color-programme-second);
+	text-transform: uppercase;
+	/* border-bottom: 2px solid var(--color-programme-second); */
+}
+
+.mini-card {
+	cursor: pointer;
+	transition: 0.1s;
+}
+
+.mini-card:hover {
+	transform: scale(1.01);
+	box-shadow: 0 10px 10px rgba(0,0,0,.08), 0 4px 8px rgba(0,0,0,.1);
 }
 
 .card-body ul {
