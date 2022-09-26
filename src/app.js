@@ -569,7 +569,7 @@ const LeafletMap = {
             return L.layerGroup({className: 'label-layer',interactive:false}).addTo(this.map)
         },
         comLayer() {
-            return L.layerGroup({className: 'com-layer',interactive:false}).addTo(this.map)
+            return L.layerGroup({className: 'com-layer',interactive:false})
         },
         hoveredLayer() {
             return L.layerGroup({ className: 'hovered-layer' }).addTo(this.map);
@@ -578,40 +578,85 @@ const LeafletMap = {
             return L.layerGroup({ className: 'pin-layer' }).addTo(this.map);
         },
         propSymbolsDepLayer() {
-            return L.layerGroup({}).addTo(this.map);
+            return L.layerGroup({});
         },
         propSymbolsRegLayer() {
-            return L.layerGroup({}).addTo(this.map);
+            return L.layerGroup({});
         },
     },
     async mounted() {
         loadingScreen.show() // pendant le chargement, active le chargement d'écran
-        await this.createBasemap(); // créé les géométries d'habillage !!! ne fonctionne pas avec les tuiles vectorielles !!!!
+        await this.createBasemap(); // créé les géométries d'habillage !!! ne fonctionne pas avec les tuiles vectorielles !!!!      
         this.displayToponym(); // affiche les toponymes d'habillage
-
+        
         this.data = await getData(dataUrl); // charge les données
         this.comGeom = await this.loadGeom("data/centroide-fr-drom-4326-style1-com.geojson") // charge les géométries de travail 
-        // this.joinedData = this.joinGeom(this.data,this.comGeom,"insee_com")
         this.joinedData = this.comGeom.features.filter(e => this.data.map(e => e.insee_com).includes(e.properties.insee_com))
-        this.createFeatures(this.joinedData); // affiche les géométries de travail
-
-        loadingScreen.hide() // enlève le chargement d'écran
 
         //////////////////////////////////////////////////
 
-        // NE FONCTIONNE PAS CAR PROPRIETES INITIALES PERDUES .... 
+        // ajout EPCI au fond
+        const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
+
+        new L.GeoJSON(epciGeom, {
+            interactive:false,
+            style:{
+                fillOpacity:1,
+                fillColor:"rgba(156,185,77,1)",
+                weight:0.2,
+                color:'white',
+                opacity:1,
+
+            },
+            filter:feature => this.joinedData.map(e => e.properties.siren_epci).includes(feature.properties.siren_epci)
+        })
+        // .addTo(this.baseMapLayer);
+
+        this.createFeatures(this.joinedData); // affiche les géométries de travail
+        
+        //////////////////////////////////////////////////
+
+        // affichage cercles proportionnels 
         
         // cercles prop à l'échelle des départements 
         let nbPvdPerDep = countBy(geojsonToJson(this.joinedData),"insee_dep");
         let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"));
-        let GeomNbPvdPerDep = this.joinGeom(nbPvdPerDep,depGeomCtr,"insee_dep");
-        this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsRegLayer);
+        let GeomNbPvdPerDep = this.joinGeom(depGeomCtr,nbPvdPerDep,"insee_dep");
+        this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsDepLayer);
 
         // cercles prop à l'échelle des regions 
-        // let nbPvdPerReg = countBy(geojsonToJson(this.joinedData),"insee_reg");
-        // let regGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson"));
-        // let GeomNbPvdPerReg = this.joinGeom(nbPvdPerReg,regGeomCtr,"insee_reg");
-        // this.propSymbols(GeomNbPvdPerReg,"nb","insee_reg","insee_reg").addTo(this.propSymbolsRegLayer);
+        let nbPvdPerReg = countBy(geojsonToJson(this.joinedData),"insee_reg");
+        let regGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson"));
+        let GeomNbPvdPerReg = this.joinGeom(regGeomCtr,nbPvdPerReg,"insee_reg");
+        this.propSymbols(GeomNbPvdPerReg,"nb","insee_reg","insee_reg").addTo(this.propSymbolsRegLayer);
+        this.propSymbolsRegLayer.addTo(this.map)
+
+        // affichage dynamique des couches reg, dep ou com en fct du niv de zoom
+        this.map.on("zoomend", () => {
+            let zoomLevel = this.map.getZoom();
+            // control layer to display 
+            switch (true) {
+                case (zoomLevel <= 6.5):
+                    this.map.addLayer(this.propSymbolsRegLayer);
+                    this.map.removeLayer(this.propSymbolsDepLayer);
+                    this.map.removeLayer(this.comLayer);
+                    break;
+    
+                case (zoomLevel > 6.5 && zoomLevel < 9):
+                    this.map.addLayer(this.propSymbolsDepLayer);
+                    this.map.removeLayer(this.propSymbolsRegLayer);
+                    this.map.removeLayer(this.comLayer);
+                    break;
+    
+                case (zoomLevel >= 9):
+                    this.map.addLayer(this.comLayer);
+                    this.map.removeLayer(this.propSymbolsRegLayer);
+                    this.map.removeLayer(this.propSymbolsDepLayer);
+                    break;
+            }
+        })
+        
+        loadingScreen.hide(); // enlève le chargement d'écran
     },
     methods: {
         async loadGeom(file) {
@@ -621,13 +666,13 @@ const LeafletMap = {
         },
         // créer le fond de carte (limite dép/reg/ ce que tu veux bref)
         async createBasemap() {
-            const depGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson");
-            const regGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson");
-            const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
+            this.depGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson");
+            this.regGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson");
+            this.epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
             const cerclesDromGeom = await this.loadGeom("data/cercles_drom.geojson");
 
-            new L.GeoJSON(depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
-            new L.GeoJSON(regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
+            new L.GeoJSON(this.depGeom, this.styles.basemap.dep).addTo(this.baseMapLayer);
+            new L.GeoJSON(this.regGeom, this.styles.basemap.reg).addTo(this.baseMapLayer);
             // new L.GeoJSON(epciGeom, this.styles.basemap.epci).addTo(this.baseMapLayer);
             new L.GeoJSON(cerclesDromGeom,this.styles.basemap.drom).addTo(this.baseMapLayer);
         },
@@ -660,12 +705,12 @@ const LeafletMap = {
             })
         },
         // jointure entre attributs et géométries
-        joinGeom(attributs,geometries,id) {
+        joinGeom(geometries,attributs,id) {
             let arr2Map = attributs.reduce((acc, curr) => {
                 acc[curr[id]] = {properties:curr}
                 return acc;
             }, {});
-            let combined = geometries.features.map(d => Object.assign(d, [arr2Map[d.properties[id]]]));
+            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties[id]]));
             combined = combined.filter(e => attributs.map( e => e[id]).includes(e.properties[id]));
             return combined
         },
