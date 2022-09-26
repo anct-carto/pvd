@@ -317,13 +317,24 @@ const LeafletSidebar = {
         </div>
         <!-- panel content -->
         <div class="leaflet-sidebar-content">
+            <div class="leaflet-sidebar-header">
+                <span>
+                    Carte interactive
+                </span>
+                <h4>
+                    Petites villes de demain
+                </h4>
+                <span class="leaflet-sidebar-close" @click="$emit('closeSidebar')">
+                    <i class="la la-step-backward"></i>
+                </span>
+            </div>
             <div class="leaflet-sidebar-pane" id="home">
-                <div class="leaflet-sidebar-header">
+                <!--<div class="leaflet-sidebar-header">
                     <span>Accueil</span>
                     <span class="leaflet-sidebar-close">
                         <i class="la la-step-backward"></i>
                     </span>
-                </div>
+                </div>-->
                 <div v-if="!show" class="sidebar-body">
                     <div class="sidebar-header">
                         <img src="img/pvd_logo.png" id="logo-programme"></img>
@@ -354,12 +365,12 @@ const LeafletSidebar = {
                 </div>
             </div>
             <div class="leaflet-sidebar-pane" id="download">
-                <div class="leaflet-sidebar-header">
+                <!--<div class="leaflet-sidebar-header">
                     <span>Téléchargement</span>
                     <span class="leaflet-sidebar-close">
                         <i class="la la-step-backward"></i>
                     </span>
-                </div>
+                </div>-->
                 <h5 style="font-family:'Marianne-Extrabold'">
                     Télécharger les données
                 </h5>
@@ -376,12 +387,12 @@ const LeafletSidebar = {
                 </p>
             </div>
             <div class="leaflet-sidebar-pane" id="a-propos">
-                <h2 class="leaflet-sidebar-header">
+                <!--<h2 class="leaflet-sidebar-header">
                     À propos
                     <span class="leaflet-sidebar-close">
                         <i class="las la-step-backward"></i>
                     </span>
-                </h2>
+                </h2>-->
                 <a href="https://agence-cohesion-territoires.gouv.fr/" target="_blank">
                     <img src="img/logo_anct.png" width="100%" style = 'padding-bottom: 5%;'>
                 </a>

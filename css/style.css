@@ -54,47 +54,71 @@ html, body, #mapid {
 	}
 }
 
+/* header panneau avec titre carte */
 .leaflet-sidebar-header {
-	background-color: var(--color-programme);
+	background: none;
 	font-family: 'Marianne-Bold';
 	text-transform: uppercase;
-	margin-bottom: 10px;
-	display: block;
+	color:var(--bleu-anct);
+	font-size: 14px;
+	margin:0px 10px 15px 5px;
+	height: auto;
+	z-index: 0;
 }
 
-.leaflet-sidebar-content {
-	background-color: rgba(255,255,255,.75);
-	backdrop-filter:blur(6px);
+.leaflet-sidebar-close {
+	color:black;
+	z-index: 5000 !important;
 }
 
+
+/* sidebar */
+.leaflet-sidebar-tabs {
+	background: var(--color-programme);
+	/* background: linear-gradient(180deg, var(--bleu-anct) 0%, rgb(226, 224, 245) 100%);  */
+	box-shadow: 2px 0px 2px 0px #656565;
+}
+
+/* boutons sidebar */
+.leaflet-sidebar-tabs > ul > li {
+	color:white;
+}
 
 .leaflet-sidebar-tabs > ul > li.active,
 .leaflet-sidebar-tabs > ul > li.active:hover {
-	 background-color: var(--color-programme);
- }
+	background-color: rgb(249, 249, 251);
+	color:var(--bleu-anct);
+	border-left: solid 3px var(--color-programme-second);	 
+}
 
 .leaflet-sidebar-tabs > ul > li:hover {
 	background-color: rgba(0,0,0,.25);
+	color:white;
 	transition: .2s
+} 
+
+/* nom onglet au survol d'un bouton */
+.leaflet-sidebar-tabs > .tab-name {
+	position:relative;
+	display: block;
+	z-index: 1000;
+	left: 45px;
+	background: var(--jaune-anct) !important;
+	padding: 5px 10px 5px 10px;
+	border-radius: 3px;
+	font-family: 'Marianne-Bold';
+	text-transform: uppercase;
+	width: 100px;
+	text-align: center;
 }
 
-.leaflet-sidebar-tabs {
-	 background-color: #F4F4F4;
-	 box-shadow: 2px 0px 2px 0px #656565;
-}
 
 
-
-.leaflet-legend {
-	font-family: 'Abel-Regular';
-	background-color: rgba(255,255,255,.9);
-	padding: 10px;
-	box-shadow: 0 1px 10px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.06);
-	border-radius: 4px;
-}
+/* -------------------------------------------------------------------------- */
+/* 									LEAFLET MAP						 		  */
+/* -------------------------------------------------------------------------- */
 
 /* chef lieux */
-
 .leaflet-marker-pane {
 	left:-10px;
 	opacity: 0.75;
@@ -106,15 +130,7 @@ html, body, #mapid {
 	text-align: center;
 	text-shadow: -0.5px 0 white, 0 0.5px white, 0.5px 0 white, 0 -0.5px white;
   }
-
-.sidebar-body {
-	margin-right: 10px;
-}
-
-/* -------------------------------------------------------------------------- */
-/* 									LEAFLET MAP						 		  */
-/* -------------------------------------------------------------------------- */
-
+  
 .leaflet-tooltip-top:before, 
 .leaflet-tooltip-bottom:before {
 	border: none !important;
