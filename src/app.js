@@ -266,7 +266,17 @@ const RadioSwitch = {
         <label class="btn btn-outline-primary" for="btnradio2">Répartition par échelon</label>
     </div>
     `,
-}
+};
+
+const CardListTemplate = {
+    template:`
+        <div class="card">
+            <div class= "card-header">
+                <span>{{ obs.lib_com }} ({{ obs.insee_dep }})</span>
+            </div>
+        </div>`,
+    props: ['obs'],
+};
 
 const CardTemplate = {
     template:`
@@ -321,8 +331,19 @@ const LeafletSidebar = {
                     <search-group @searchResult="getResult"></search-group><br>
                     <text-intro></text-intro>
                 </div>
-                <div>
-                    <card :obs="cardContent" v-if="show"></card><br>
+                <div v-if="show">
+                    <card :obs="cardContent" v-if="cardContent.insee_com"></card><br>
+                    <p v-if="!cardContent.insee_com"><b>{{ cardContent.length }}</b> communes</p>
+                    <input class="form-control" type="search" 
+                        placeholder="Filtrer par commune" 
+                        id="searchField" v-model="search">
+                    <card-list  v-for="(obs,i) in cardContent"
+                                :key="i" 
+                                :obs="obs" v-if="!cardContent.insee_com" 
+                                @click.native="getResult(obs)"
+                                @mouseenter.native="$emit('highlightFeature',obs.insee_com)"
+                                @mouseleave.native="$emit('clearHighlight')">
+                    </card-list>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
                         <i class="fa fa-chevron-left"></i>
                         Retour à l'accueil
@@ -377,6 +398,7 @@ const LeafletSidebar = {
     components: {
         'search-group':SearchBar,
         card: CardTemplate,
+        'card-list': CardListTemplate,
         'text-intro':IntroTemplate
     },
     props: ['sourceData'],
@@ -384,6 +406,7 @@ const LeafletSidebar = {
         return {
             show:false,
             cardContent:null,
+            search:''
         }
     },
     watch: {
@@ -391,11 +414,7 @@ const LeafletSidebar = {
             this.cardContent = this.sourceData;
             this.cardContent ? this.show = true : this.show = false
         },
-    },
-    computed: {
-        filteredList() {
-            // return this.fromParent.slice(0, this.nbResults)
-        }
+        search(e) { this.onChange(e) }
     },
     methods: {
         onClick() {
@@ -405,7 +424,12 @@ const LeafletSidebar = {
         },
         getResult(result) {
             this.$emit('searchResult', result)
-        }
+        },
+        onChange() {
+            this.cardContent = this.sourceData.filter(obs => {
+                return obs.lib_com.toLowerCase().includes(this.search.toLowerCase())
+            })
+        },
     },
 };
 
@@ -772,6 +796,7 @@ const LeafletMap = {
         clearMap() {
             this.cardContent = null;
             this.pinLayer.clearLayers();
+            this.maskLayer.clearLayers();
         },
         flyToBoundsWithOffset(layer) {
             // cette fonction est utile pour faire décaler le centre de la carte sur le côté droit si le panneau est ouvert
