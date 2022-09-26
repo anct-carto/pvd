@@ -332,18 +332,20 @@ const LeafletSidebar = {
                     <text-intro></text-intro>
                 </div>
                 <div v-if="show">
-                    <card :obs="cardContent" v-if="cardContent.insee_com"></card><br>
-                    <p v-if="!cardContent.insee_com"><b>{{ cardContent.length }}</b> communes</p>
-                    <input class="form-control" type="search" 
-                        placeholder="Filtrer par commune" 
-                        id="searchField" v-model="search">
-                    <card-list  v-for="(obs,i) in cardContent"
-                                :key="i" 
-                                :obs="obs" v-if="!cardContent.insee_com" 
-                                @click.native="getResult(obs)"
-                                @mouseenter.native="$emit('highlightFeature',obs.insee_com)"
-                                @mouseleave.native="$emit('clearHighlight')">
-                    </card-list>
+                    <div v-if="cardContent.insee_com">
+                        <card :obs="cardContent"></card>
+                    </div>
+                    <div v-else>
+                        <p ><b>{{ cardContent.length }}</b> communes</p>
+                        <input class="form-control" type="search" 
+                            placeholder="Filtrer par commune" 
+                            id="searchField" v-model="search">
+                        <card-list  v-for="(obs,i) in cardContent"
+                                    :key="i" 
+                                    :obs="obs" 
+                                    @click.native="getResult(obs)">
+                        </card-list>
+                    </div>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
                         <i class="fa fa-chevron-left"></i>
                         Retour à l'accueil
@@ -717,14 +719,14 @@ const LeafletMap = {
                 map.on('zoomend', function() {
                     let zoom = map.getZoom();
                     switch (true) {
-                      case zoom <= 6 :
+                      case zoom <= 7 :
                         [labelDep,labelCan].forEach(layer => layer.removeFrom(labelLayer))
                         break;
-                      case zoom > 6 && zoom <=9:
+                      case zoom > 7 && zoom <=10:
                         labelDep.addTo(labelLayer);
                         labelCan.removeFrom(labelLayer);
                         break;
-                      case zoom > 9 :
+                      case zoom > 10 :
                         labelCan.addTo(labelLayer);
                         break;
                     }
