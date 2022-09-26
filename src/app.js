@@ -773,8 +773,13 @@ const LeafletMap = {
             // vide la couche si pleine
             this.pinLayer.clearLayers();
             
-            // // envoie les infos de l'élément sélectionné au composant "fiche"
+            // retrouve les infos correspondantes
             let content = geojsonToJson(this.joinedData).find(e => e.insee_com == code);
+            // infos complémentaires (à retrouver à partir des couches de géom)
+            content.lib_dep = this.depGeom.features.find(feature => content.insee_dep === feature.properties.insee_dep).properties.lib_dep;
+            content.lib_reg = this.regGeom.features.find(feature => content.insee_reg === feature.properties.insee_reg).properties.lib_reg;
+            content.lib_epci = this.epciGeom.features.find(feature => content.siren_epci === feature.properties.siren_epci).properties.lib_epci;
+            // envoie les infos de l'élément sélectionné au composant "fiche"
             this.cardContent = content;
 
             // retrouve la géométrie
@@ -819,8 +824,6 @@ const LeafletMap = {
             const max = geom.reduce((a,b) => {
                 return (a.properties[nbCol] > b.properties[nbCol]) ? a : b
             }).properties.nb;
-
-
 
             const propSymbols = new L.GeoJSON(geom, {
                 style: {
