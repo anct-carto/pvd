@@ -336,9 +336,9 @@ const LeafletSidebar = {
                     </span>
                 </div>-->
                 <div v-if="!show" class="sidebar-body">
-                    <div class="sidebar-header">
+                    <!--<div class="sidebar-header">
                         <img src="img/pvd_logo.png" id="logo-programme"></img>
-                    </div><br>
+                    </div><br>-->
                     <search-group @searchResult="getResult"></search-group><br>
                     <text-intro></text-intro>
                 </div>
@@ -394,7 +394,7 @@ const LeafletSidebar = {
                     </span>
                 </h2>-->
                 <a href="https://agence-cohesion-territoires.gouv.fr/" target="_blank">
-                    <img src="img/logo_anct.png" width="100%" style = 'padding-bottom: 5%;'>
+                    <img src="img/LOGO-ANCT+Marianne.png" width="100%" style = 'padding-bottom: 5%;'>
                 </a>
                 <p>
                     <b>Source et administration des données :</b>
