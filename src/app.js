@@ -307,9 +307,9 @@ const LeafletSidebar = {
         <div class="leaflet-sidebar-tabs">
             <!-- top aligned tabs -->
             <ul role="tablist">
-                <li><a href="#home" role="tab"><i class="fal fa-home"></i></a></li>
-                <li><a href="#download" role="tab"><i class="fal fa-download"></i></a></li>
-                <li><a href="#a-propos" role="tab"><i class="fal fa-question"></i></a></li>
+                <li><a href="#home" role="tab"><i class="las la-home"></i></a></li>
+                <li><a href="#download" role="tab"><i class="la la-download"></i></a></li>
+                <li><a href="#a-propos" role="tab"><i class="las la-info-circle"></i></a></li>
             </ul>
             <!-- bottom aligned tabs -->
             <ul role="tablist">
@@ -321,7 +321,7 @@ const LeafletSidebar = {
                 <div class="leaflet-sidebar-header">
                     <span>Accueil</span>
                     <span class="leaflet-sidebar-close">
-                        <i class="fal fa-step-backward"></i>
+                        <i class="la la-step-backward"></i>
                     </span>
                 </div>
                 <div v-if="!show" class="sidebar-body">
@@ -347,7 +347,7 @@ const LeafletSidebar = {
                         </card-list>
                     </div>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
-                        <i class="fa fa-chevron-left"></i>
+                        <i class="la la-chevron-left"></i>
                         Retour à l'accueil
                     </button>
                 </div>
@@ -356,7 +356,7 @@ const LeafletSidebar = {
                 <div class="leaflet-sidebar-header">
                     <span>Téléchargement</span>
                     <span class="leaflet-sidebar-close">
-                        <i class="fal fa-step-backward"></i>
+                        <i class="la la-step-backward"></i>
                     </span>
                 </div>
                 <h5 style="font-family:'Marianne-Extrabold'">
@@ -378,7 +378,7 @@ const LeafletSidebar = {
                 <h2 class="leaflet-sidebar-header">
                     À propos
                     <span class="leaflet-sidebar-close">
-                        <i class="fas fa-step-backward"></i>
+                        <i class="las la-step-backward"></i>
                     </span>
                 </h2>
                 <a href="https://agence-cohesion-territoires.gouv.fr/" target="_blank">

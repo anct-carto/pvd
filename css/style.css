@@ -21,12 +21,6 @@ html, body, #mapid {
 	font-size: 0.9em;
 }
 
-body i {
-	font-size: 1.4em;
-	font-family: 'FontAwesome'!important;
-	font-style: lighter;
-}
-
 /* -------------------------------------------------------------------------- */
 /* 								SCREEN LOADING					   	 		  */													
 /* -------------------------------------------------------------------------- */
