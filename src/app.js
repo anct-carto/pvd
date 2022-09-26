@@ -583,6 +583,9 @@ const LeafletMap = {
         propSymbolsRegLayer() {
             return L.layerGroup({});
         },
+        maskLayer() {
+            return L.layerGroup().addTo(this.map)
+        }
     },
     async mounted() {
         loadingScreen.show() // pendant le chargement, active le chargement d'écran
@@ -745,7 +748,7 @@ const LeafletMap = {
             this.pinLayer.clearLayers();
             
             // // envoie les infos de l'élément sélectionné au composant "fiche"
-            let content = this.data.find(e => e.insee_com == code);
+            let content = geojsonToJson(this.joinedData).find(e => e.insee_com == code);
             this.cardContent = content;
 
             // retrouve la géométrie
@@ -754,7 +757,7 @@ const LeafletMap = {
             // style à appliquer
             let glow = new L.circleMarker(coordsResult,this.styles.features.clicked).addTo(this.pinLayer);
             let circle = new L.circleMarker(coordsResult,this.styles.features.default).addTo(this.pinLayer);
-            circle.bindTooltip(content.lib_com,this.styles.tooltip.default).openTooltip()
+            circle.bindTooltip(content.lib_com,this.styles.tooltip.default).openTooltip();
             circle.setStyle({fillColor:this.getColor("pvd")});
             glow.setStyle({fillColor:this.getColor("pvd")});
 
@@ -784,11 +787,15 @@ const LeafletMap = {
             return color
         },
         propSymbols(geom,nbCol,id,lib) {
+            const onClickPropSymbols = (f,id) => this.onClickPropSymbols(f,id);
+
             const max = geom.reduce((a,b) => {
                 return (a.properties[nbCol] > b.properties[nbCol]) ? a : b
             }).properties.nb;
 
-            return new L.GeoJSON(geom, {
+
+
+            const propSymbols = new L.GeoJSON(geom, {
                 style: {
                     fillColor:'#e57d40',
                     fillOpacity:.5,
@@ -802,13 +809,32 @@ const LeafletMap = {
                     .bindTooltip(`${String(feature.properties[lib]).toUpperCase()}<br>
                     ${feature.properties[nbCol]} <span class='leaflet-tooltip-info'> communes</span>
                     `)
-                    // .on("click", e => this.onClickOnPropSymbols(e, insee_id, tooltipContent));
                 },
                 onEachFeature: function(feature, layer) {
                     layer.on("mouseover", (e) => e.target.setStyle({fillOpacity:1}))
-                         .on("mouseout", (e) => e.target.setStyle({fillOpacity:.5}));
+                    .on("mouseout", (e) => e.target.setStyle({fillOpacity:.5}))
+                    .on("click", (e) => {
+                        L.DomEvent.stopPropagation(e);
+                        onClickPropSymbols(feature,id);
+                    })
                 },
             });
+            
+            return propSymbols
+        },
+        onClickPropSymbols(feature,id) {
+            // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
+            let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
+            this.cardContent = results;
+
+            // masque sélection autour du territoire
+            this.maskLayer.clearLayers()
+            let sourceGeom = id == "insee_dep" ? this.depGeom : this.regGeom
+            let geomBounds = sourceGeom.features.find(e => e.properties[id] == feature.properties[id]);
+
+            this.flyToBoundsWithOffset(new L.GeoJSON(geomBounds));
+            let mask = L.mask(geomBounds, { color: 'red', fillColor: "rgba(0,0,0,.25)" });
+            this.maskLayer.addLayer(mask);
         },
     },
 }
