@@ -326,16 +326,7 @@ const LeafletSidebar = {
                 </span>
             </div>
             <div class="leaflet-sidebar-pane" id="home">
-                <!--<div class="leaflet-sidebar-header">
-                    <span>Accueil</span>
-                    <span class="leaflet-sidebar-close">
-                        <i class="la la-step-backward"></i>
-                    </span>
-                </div>-->
                 <div v-if="!show" class="sidebar-body">
-                    <!--<div class="sidebar-header">
-                        <img src="img/pvd_logo.png" id="logo-programme"></img>
-                    </div><br>-->
                     <search-group @searchResult="getResult"></search-group><br>
                     <text-intro></text-intro>
                 </div>
@@ -363,12 +354,6 @@ const LeafletSidebar = {
                 </div>
             </div>
             <div class="leaflet-sidebar-pane" id="download">
-                <!--<div class="leaflet-sidebar-header">
-                    <span>Téléchargement</span>
-                    <span class="leaflet-sidebar-close">
-                        <i class="la la-step-backward"></i>
-                    </span>
-                </div>-->
                 <h5 style="font-family:'Marianne-Extrabold'">
                     Télécharger les données
                 </h5>
@@ -863,6 +848,8 @@ const LeafletMap = {
             return propSymbols
         },
         onClickPropSymbols(feature,id) {
+            this.sidebar.open("home");
+            
             // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
             let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
             id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
@@ -880,8 +867,6 @@ const LeafletMap = {
             this.flyToBoundsWithOffset(new L.GeoJSON(geomBounds,{ padding: [50,50]}));
             let mask = L.mask(geomBounds, { color: 'red', fillColor: "rgba(0,0,0,.25)" });
             this.maskLayer.addLayer(mask);
-
-            this.sidebar.open("home");
         },
     },
 }
