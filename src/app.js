@@ -5,11 +5,6 @@
 */
 
 
-const data_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTOLYK3fGTi0MyoFY4iAz9zDsXFy7_t-dni9ijNBKnVZTW540K73BXDYCeUGJN80hXqCqscqX9xO19v/pub?output=csv"
-let spreadsheet_res = [];
-// let tab = JSON.parse(sessionStorage.getItem("session_data"));
-let page_status;
-
 // Chargement données globales ****************************************************************************
 
 // source données
@@ -19,9 +14,11 @@ const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/a43bb3ce-8dfb-4503-a9d2-
 async function getData(path) {
     const sessionData = JSON.parse(sessionStorage.getItem("session_data1"));
     if(sessionData) {
+        console.log("Chargement depuis drive");
         return sessionData
     } else {
         try {
+            console.log("Chargement depuis data.gouv");
             const data = await fetchCsv(path)
             sessionStorage.setItem('session_data1',JSON.stringify(data));
             return data
@@ -441,7 +438,7 @@ const LeafletSidebar = {
             this.$emit('searchResult', result)
         },
         onChange() {
-            this.cardContent = this.sourceData.filter(obs => {
+            this.cardContent.results = this.sourceData.results.filter(obs => {
                 return obs.lib_com.toLowerCase().includes(this.search.toLowerCase())
             })
         },
@@ -534,7 +531,7 @@ const LeafletMap = {
                 categories:{
                     colors:['#f69000'],
                     values:["pvd"],
-                    labels:["Petites villes de demain"],
+                    labels:["Petite ville de demain"],
                 },
                 features:{
                     default:{
@@ -816,8 +813,7 @@ const LeafletMap = {
         },
         clearMap() {
             this.cardContent = null;
-            this.pinLayer.clearLayers();
-            this.maskLayer.clearLayers();
+            [this.pinLayer,this.hoveredLayer,this.maskLayer].forEach(layer => layer.clearLayers());
         },
         flyToBoundsWithOffset(layer) {
             // cette fonction est utile pour faire décaler le centre de la carte sur le côté droit si le panneau est ouvert
@@ -867,7 +863,6 @@ const LeafletMap = {
             return propSymbols
         },
         onClickPropSymbols(feature,id) {
-            console.log(id.includes("reg"));
             // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
             let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
             id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
@@ -881,9 +876,11 @@ const LeafletMap = {
             let sourceGeom = id == "insee_dep" ? this.depGeom : this.regGeom
             let geomBounds = sourceGeom.features.find(e => e.properties[id] == feature.properties[id]);
 
-            this.flyToBoundsWithOffset(new L.GeoJSON(geomBounds));
+            this.flyToBoundsWithOffset(new L.GeoJSON(geomBounds,{ padding: [50,50]}));
             let mask = L.mask(geomBounds, { color: 'red', fillColor: "rgba(0,0,0,.25)" });
             this.maskLayer.addLayer(mask);
+
+            this.sidebar.open("home");
         },
     },
 }
