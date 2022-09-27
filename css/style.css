@@ -285,7 +285,6 @@ li {
 	border: solid 1px var(--color-programme-second);
 	color:white;
 	font-family: 'Marianne-Bold';
-	border: none;
 	border-radius: 0;
 	text-transform: uppercase;
 	margin: 0;
@@ -294,7 +293,6 @@ li {
 #back-btn:hover {
 	background-color: white;
 	color:var(--bleu-anct);
-	border: solid 1px var(--color-programme-second)
 }
 
 
