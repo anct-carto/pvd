@@ -61,7 +61,7 @@ html, body, #mapid {
 	text-transform: uppercase;
 	color:var(--bleu-anct);
 	font-size: 14px;
-	margin:0px 10px 15px 5px;
+	margin:0px 0px 15px 5px;
 	height: auto;
 	z-index: 0;
 }
@@ -190,7 +190,6 @@ html, body, #mapid {
 
 #search-field {
 	font-size: 1.15em;
-	border-right: none;
 }
 
 .input-group-text i {
