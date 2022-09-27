@@ -327,7 +327,8 @@ const LeafletSidebar = {
             </div>
             <div class="leaflet-sidebar-pane" id="home">
                 <div v-if="!show" class="sidebar-body">
-                    <search-group @searchResult="getResult"></search-group><br>
+                    <search-group @searchResult="getResult"></search-group>
+                    <hr>
                     <text-intro></text-intro>
                 </div>
                 <div v-if="show">
@@ -621,13 +622,13 @@ const LeafletMap = {
         //////////////////////////////////////////////////
 
         // ajout EPCI au fond
-        const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
+        // const epciGeom = await this.loadGeom("data/fr-drom-4326-pur-style1-epci.geojson");
 
-        new L.GeoJSON(epciGeom, {
+        new L.GeoJSON(this.epciGeom, {
             interactive:false,
             style:{
                 fillOpacity:1,
-                fillColor:"rgba(156,185,77,1)",
+                fillColor:"rgba(156,185,77,.5)",
                 weight:0.2,
                 color:'white',
                 opacity:1,
@@ -635,7 +636,7 @@ const LeafletMap = {
             },
             filter:feature => this.joinedData.map(e => e.properties.siren_epci).includes(feature.properties.siren_epci)
         })
-        // .addTo(this.baseMapLayer);
+        .addTo(this.baseMapLayer);
 
         this.createFeatures(this.joinedData); // affiche les géométries de travail
         
@@ -718,11 +719,11 @@ const LeafletMap = {
                       case zoom <= 7 :
                         [labelDep,labelCan].forEach(layer => layer.removeFrom(labelLayer))
                         break;
-                      case zoom > 7 && zoom <=10:
+                      case zoom > 7 && zoom <=9:
                         labelDep.addTo(labelLayer);
                         labelCan.removeFrom(labelLayer);
                         break;
-                      case zoom > 10 :
+                      case zoom > 9 :
                         labelCan.addTo(labelLayer);
                         break;
                     }
@@ -754,12 +755,12 @@ const LeafletMap = {
                         return circleMarker
                     },
                 }).on("mouseover", (e) => {
-                    e.target.setStyle(this.styles.features.clicked)
+                    e.target.setStyle(this.styles.features.clicked);
                 }).on("mouseout",(e) => {
-                    e.target.setStyle(styleDefault)
+                    e.target.setStyle(styleDefault);
                 }).on("click", (e) => {
                     L.DomEvent.stopPropagation(e);
-                    this.onClick(e.sourceTarget.feature.properties.insee_com)
+                    this.onClick(e.sourceTarget.feature.properties.insee_com);
                 });
                 marker.addTo(this.comLayer);
             }
