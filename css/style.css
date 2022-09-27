@@ -281,8 +281,8 @@ li {
 /* bouton retour */
 
 #back-btn {
-	background-color: var(--color-programme-second);
-	border: solid 1px var(--color-programme-second);
+	background-color: var(--color-programme);
+	border: solid 1px var(--color-programme);
 	color:white;
 	font-family: 'Marianne-Bold';
 	border-radius: 0;
