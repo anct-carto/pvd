@@ -345,11 +345,11 @@ const LeafletSidebar = {
                     </div>
                     <div v-else>
                         <h3>{{ cardContent.territoire }}</h3>
-                        <p ><b>{{ cardContent.results.length }}</b> communes</p>
+                        <p ><b>{{ cardContent.length }}</b> communes</p>
                         <input class="form-control" type="search" 
                             placeholder="Filtrer par commune" 
                             id="searchField" v-model="search">
-                        <card-list  v-for="(obs,i) in cardContent.results"
+                        <card-list  v-for="(obs,i) in cardContent"
                                     :key="i" 
                                     :obs="obs" 
                                     class="mini-card"
@@ -417,8 +417,8 @@ const LeafletSidebar = {
     data() {
         return {
             show:false,
+            search:'',
             cardContent:null,
-            search:''
         }
     },
     watch: {
@@ -438,7 +438,7 @@ const LeafletSidebar = {
             this.$emit('searchResult', result)
         },
         onChange() {
-            this.cardContent.results = this.sourceData.results.filter(obs => {
+            this.cardContent = this.sourceData.filter(obs => {
                 return obs.lib_com.toLowerCase().includes(this.search.toLowerCase())
             })
         },
@@ -866,10 +866,11 @@ const LeafletMap = {
             // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
             let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
             id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
-            this.cardContent = {
-                territoire:territoire,
-                results:results,
-            };
+            // this.cardContent = {
+            //     territoire:territoire,
+            //     results:results,
+            // };
+            this.cardContent = results;
 
             // masque sélection autour du territoire
             this.maskLayer.clearLayers()
