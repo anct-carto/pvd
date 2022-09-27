@@ -137,10 +137,7 @@ html, body, #mapid {
 }
 
 .leaflet-tooltip {
-	top: -10px;
-	white-space:normal ;
 	text-align: center;
-	padding:0 -25px !important;
 	border:none !important;
 	opacity: 1;
 	background-color: var(--color-programme-second) !important;
@@ -151,7 +148,6 @@ html, body, #mapid {
 }
 
 .leaflet-tooltip-clicked {
-	left: -15px;
 	background-color: var(--color-programme-second)!important;
 }
 
@@ -285,19 +281,22 @@ li {
 /* bouton retour */
 
 #back-btn {
-	background-color: var(--color-programme);
+	background-color: var(--color-programme-second);
+	border: solid 1px var(--color-programme-second);
+	color:white;
+	font-family: 'Marianne-Bold';
 	border: none;
-	font-size: .9em;
+	border-radius: 0;
+	text-transform: uppercase;
+	margin: 0;
 }
 
 #back-btn:hover {
-	font-family: "Marianne-Bold";
-	opacity: .75;;
+	background-color: white;
+	color:var(--bleu-anct);
+	border: solid 1px var(--color-programme-second)
 }
 
-#back-btn i {
-	font-size: .8em;
-}
 
 /* -------------------------------------------------------------------------- */
 /* 								 SCROLL BAR						   	 		  */													

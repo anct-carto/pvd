@@ -348,8 +348,8 @@ const LeafletSidebar = {
                         </card-list>
                     </div>
                     <button id="back-btn" type="button" class="btn btn-primary" v-if="show" @click="onClick">
-                        <i class="la la-chevron-left"></i>
-                        Retour à l'accueil
+                        <i class="la la-arrow-left"></i>
+                        Retour
                     </button>
                 </div>
             </div>
