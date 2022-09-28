@@ -417,6 +417,7 @@ const LeafletSidebar = {
     },
     watch: {
         sourceData() {
+            this.search = '';
             this.cardContent = this.sourceData;
             this.cardContent ? this.show = true : this.show = false
         },
