@@ -316,7 +316,7 @@ const LeafletSidebar = {
         <div class="leaflet-sidebar-content">
             <div class="leaflet-sidebar-header">
                 <span>
-                    Carte interactive
+                    Carte interactive du programme
                 </span>
                 <h4>
                     Petites villes de demain
@@ -733,11 +733,17 @@ const LeafletMap = {
         // jointure entre attributs et géométries
         joinGeom(geometries,attributs,id) {
             let arr2Map = attributs.reduce((acc, curr) => {
-                acc[curr[id]] = {properties:curr}
+                acc[curr[id]] = curr
                 return acc;
             }, {});
-            let combined = geometries.features.map(d => Object.assign(d, arr2Map[d.properties[id]]));
-            combined = combined.filter(e => attributs.map( e => e[id]).includes(e.properties[id]));
+            let combined = geometries.features.map(d => {
+                return Object.assign(d, {
+                    properties:{
+                        ...d.properties,
+                        ...arr2Map[d.properties[id]]
+                    }
+                })
+            }).filter(e => attributs.map( e => e[id]).includes(e.properties[id]));
             return combined
         },
         createFeatures(geomData) {
