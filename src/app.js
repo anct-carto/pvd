@@ -336,8 +336,13 @@ const LeafletSidebar = {
                         <card :obs="cardContent"></card>
                     </div>
                     <div v-else>
-                        <h3>{{ territoire }}</h3>
-                        <p ><b>{{ cardContent.length }}</b> communes</p>
+                        <h5 style="color:#161616">
+                            <i class="las la-map-marker"></i>
+                            <span style="font-family:'Marianne-Bold'">{{ territoire }}</span> : 
+                            <span >
+                                <b>{{ cardContent.length }}</b> commune<span v-if="cardContent.length >1">s</span>
+                            </span>
+                        </h5><br>
                         <input class="form-control" type="search" 
                             placeholder="Filtrer par commune" 
                             id="searchField" v-model="search">
@@ -824,6 +829,7 @@ const LeafletMap = {
         },
         propSymbols(geom,nbCol,id,lib) {
             const onClickPropSymbols = (f,id) => this.onClickPropSymbols(f,id);
+            const styleTooltipDefault = this.styles.tooltip.default
 
             const max = geom.reduce((a,b) => {
                 return (a.properties[nbCol] > b.properties[nbCol]) ? a : b
@@ -841,15 +847,17 @@ const LeafletMap = {
                         radius:Math.sqrt(feature.properties[nbCol])*(35/Math.sqrt(max)),
                     })
                     .bindTooltip(`${String(feature.properties[lib]).toUpperCase()}<br>
-                    ${feature.properties[nbCol]} <span class='leaflet-tooltip-info'> communes</span>
-                    `)
+                                 ${feature.properties[nbCol]} <span class='leaflet-tooltip-info'> communes</span>`,
+                    styleTooltipDefault)
                 },
                 onEachFeature: function(feature, layer) {
-                    layer.on("mouseover", (e) => e.target.setStyle({fillOpacity:1}))
-                    .on("mouseout", (e) => e.target.setStyle({fillOpacity:.5}))
-                    .on("click", (e) => {
-                        L.DomEvent.stopPropagation(e);
-                        onClickPropSymbols(feature,id);
+                    layer.on({
+                        mouseover:(e) => e.target.setStyle({fillOpacity:1}),
+                        mouseout:(e) => e.target.setStyle({fillOpacity:.5}),
+                        click:(e) => {
+                            L.DomEvent.stopPropagation(e);
+                            onClickPropSymbols(feature,id);    
+                        }
                     })
                 },
             });
@@ -860,13 +868,10 @@ const LeafletMap = {
             this.sidebar.open("home");
             
             // récupère la liste des communes rattachées au code géo de la reg ou du dep sélectionné
-            let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id])
-            id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
-            // this.cardContent = {
-            //     territoire:territoire,
-            //     results:results,
-            // };
+            let results = geojsonToJson(this.joinedData).filter(e => e[id] == feature.properties[id]);
             this.cardContent = results;
+            // récupère le nom du territoire
+            id.includes("reg") == true ? territoire = feature.properties.lib_reg : territoire = feature.properties.lib_dep
             this.territoire = territoire;
 
             // masque sélection autour du territoire
