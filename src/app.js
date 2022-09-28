@@ -336,7 +336,7 @@ const LeafletSidebar = {
                         <card :obs="cardContent"></card>
                     </div>
                     <div v-else>
-                        <h3>{{ cardContent.territoire }}</h3>
+                        <h3>{{ territoire }}</h3>
                         <p ><b>{{ cardContent.length }}</b> communes</p>
                         <input class="form-control" type="search" 
                             placeholder="Filtrer par commune" 
@@ -399,7 +399,7 @@ const LeafletSidebar = {
         'card-list': CardListTemplate,
         'text-intro':IntroTemplate
     },
-    props: ['sourceData'],
+    props: ['sourceData','territoire'],
     data() {
         return {
             show:false,
@@ -440,6 +440,7 @@ const LeafletMap = {
             <sidebar 
                 ref="sidebar" 
                 :sourceData="cardContent" 
+                :territoire="territoire"
                 @clearMap="clearMap()" 
                 @searchResult="onSearchResultReception"
                 @closeSidebar="sidebar.close()">
@@ -552,6 +553,7 @@ const LeafletMap = {
                 }
             },
             cardContent:null,
+            territoire:null,
         }
     },
     components: {
@@ -648,13 +650,13 @@ const LeafletMap = {
         let nbPvdPerDep = countBy(geojsonToJson(this.joinedData),"insee_dep");
         let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"));
         let GeomNbPvdPerDep = this.joinGeom(depGeomCtr,nbPvdPerDep,"insee_dep");
-        this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","insee_dep").addTo(this.propSymbolsDepLayer);
+        this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","lib_dep").addTo(this.propSymbolsDepLayer);
 
         // cercles prop à l'échelle des regions 
         let nbPvdPerReg = countBy(geojsonToJson(this.joinedData),"insee_reg");
         let regGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson"));
         let GeomNbPvdPerReg = this.joinGeom(regGeomCtr,nbPvdPerReg,"insee_reg");
-        this.propSymbols(GeomNbPvdPerReg,"nb","insee_reg","insee_reg").addTo(this.propSymbolsRegLayer);
+        this.propSymbols(GeomNbPvdPerReg,"nb","insee_reg","lib_reg").addTo(this.propSymbolsRegLayer);
         this.propSymbolsRegLayer.addTo(this.map)
 
         // affichage dynamique des couches reg, dep ou com en fct du niv de zoom
@@ -865,6 +867,7 @@ const LeafletMap = {
             //     results:results,
             // };
             this.cardContent = results;
+            this.territoire = territoire;
 
             // masque sélection autour du territoire
             this.maskLayer.clearLayers()
