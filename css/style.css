@@ -140,7 +140,6 @@ html, body, #mapid {
 .leaflet-tooltip {
 	text-align: center;
 	border:none !important;
-	opacity: 1;
 	background-color: var(--color-programme-second) !important;
 	color: white !important;
 	font-size:1em;
@@ -171,38 +170,32 @@ html, body, #mapid {
 /* 									SEARCH BAR						 		  */
 /* -------------------------------------------------------------------------- */
 
-.form-control {
-	margin-bottom: 10px;
-}
 
 #search-bar-container {
 	position: relative;
-	margin-bottom: 10px;
+	margin-bottom: 20px;
 }
 
-
-.input-group-prepend {
-	position: relative;
-}
-
-#search-field {
+.input-icon {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 10;
 	font-size: 1.15em;
+	color:var(--bleu-anct);
 }
 
-.input-group-text i {
-	font-size: 1em;
+.search-field {
+	text-indent: 20px;
+	border-top-left-radius: 3px !important;
+	border-bottom-left-radius: 3px !important;
 }
-
-.input-group-text {
-	width:20px;
-	padding:0 15px 0 7px;
-}
-
 
 ul {
 	list-style: none;	
 	display: inline-block;
 	vertical-align: top;
+	z-index: 10;
 }
 
 li {

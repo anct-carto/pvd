@@ -84,8 +84,10 @@ const SearchBar = {
     template: `
             <div id="search-bar-container">
                 <div class="input-group">
-                    <input ref = "input" class="form-control shadow-none py-2 border-right-0 border-left-0"
-                            id="search-field" type="search"
+                    <i class="la la-search input-icon"></i>
+                    <input ref = "input" 
+                            class="search-field form-control"
+                            type="search"
                             placeholder="Rechercher une commune ..." 
                             v-model="inputAdress"
                             @keyup="onKeypress($event)" 
@@ -93,7 +95,7 @@ const SearchBar = {
                             @keydown.up="onKeyUp"
                             @keyup.enter="onEnter">
                     </div>
-                    <div class="autocomplete-suggestions-conainter" v-if="isOpen">
+                    <div class="autocomplete-suggestions-container" v-if="isOpen">
                         <ul class = "list-group">
                             <li class="list-group-item" v-for="(suggestion, i) in suggestionsList"
                                 @click="onClickSuggest(suggestion)"
@@ -336,16 +338,16 @@ const LeafletSidebar = {
                         <card :obs="cardContent"></card>
                     </div>
                     <div v-else>
-                        <h5 style="color:#161616">
+                        <h5>
                             <i class="las la-map-marker"></i>
                             <span style="font-family:'Marianne-Bold'">{{ territoire }}</span> : 
                             <span >
                                 <b>{{ cardContent.length }}</b> commune<span v-if="cardContent.length >1">s</span>
                             </span>
                         </h5><br>
-                        <input class="form-control" type="search" 
-                            placeholder="Filtrer par commune" 
-                            id="searchField" v-model="search">
+                        <input class="search-field form-control" type="search" 
+                            placeholder="Filtrer par commune"
+                            v-model="search">
                         <card-list  v-for="(obs,i) in cardContent"
                                     :key="i" 
                                     :obs="obs" 
@@ -371,7 +373,7 @@ const LeafletSidebar = {
                     Télécharger les cartes
                 </h5>
                 <p>
-                    L'ensemble des cartes régionales et départementales est disponible sur la 
+                    L'ensemble des cartes régionales et départementales sont disponibles sur la 
                     <a href='https://cartotheque.anct.gouv.fr/cartes?filters%5Bquery%5D=pvd&current_page=1&category=&page_size=20/' target="_blank">cartothèque de l'ANCT</a>.
                 </p>
             </div>
