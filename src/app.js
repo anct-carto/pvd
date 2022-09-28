@@ -396,6 +396,7 @@ const LeafletSidebar = {
                     ANCT, pôle Analyse & diagnostics territoriaux - <a href = 'https://cartotheque.anct.gouv.fr/cartes' target="_blank">Service cartographie</a>
                 </p>
                 <p>Technologies utilisées : Leaflet, Bootstrap, VueJS</p>
+                <p>Les données consultées sur cette carte sont disponibles au téléchargement sur <a href="https://www.data.gouv.fr/fr/datasets/programme-petites-villes-de-demain/" target="_blank">data.gouv.fr</a></p>
                 <p>Le code source de cet outil est libre et consultable sur <a href="https://www.github.com/anct-carto/pvd" target="_blank">Github</a>.</p>
             </div>
         </div>
