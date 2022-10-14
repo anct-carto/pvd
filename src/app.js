@@ -8,7 +8,7 @@
 // Chargement données globales ****************************************************************************
 
 // source données
-const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/a43bb3ce-8dfb-4503-a9d2-a9c636273235"
+const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/2a5a9898-1b6c-457c-b67e-032b0a0c7b8a"
 
 // charge depuis session storage ou fetch
 async function getData(path) {
