@@ -288,6 +288,7 @@ const CardTemplate = {
                 <info subtitle="Département" :element="obs.lib_dep + ' (' + obs.insee_dep + ')'"></info>
                 <info subtitle="Région" :element="obs.lib_reg"></info>
                 <info subtitle="EPCI" :element="obs.lib_epci"></info>
+                <info subtitle="Date de signature" :element="obs.date_signature"></info>
             </div>
         </div>`,
     props: ['obs'],
@@ -793,6 +794,8 @@ const LeafletMap = {
             content.lib_dep = this.depGeom.features.find(feature => content.insee_dep === feature.properties.insee_dep).properties.lib_dep;
             content.lib_reg = this.regGeom.features.find(feature => content.insee_reg === feature.properties.insee_reg).properties.lib_reg;
             content.lib_epci = this.epciGeom.features.find(feature => content.siren_epci === feature.properties.siren_epci).properties.lib_epci;
+            content.date_signature = this.data.find(f => content.insee_com == f.insee_com).date_signature;
+            content.date_signature = new Date(content.date_signature).toLocaleDateString("fr-FR", {day:"numeric",month:"long",year:"numeric"});
             // envoie les infos de l'élément sélectionné au composant "fiche"
             this.cardContent = content;
 
