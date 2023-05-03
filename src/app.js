@@ -307,9 +307,24 @@ const LeafletSidebar = {
         <div class="leaflet-sidebar-tabs">
             <!-- top aligned tabs -->
             <ul role="tablist">
-                <li><a href="#home" role="tab"><i class="las la-home"></i></a></li>
-                <li><a href="#download" role="tab"><i class="la la-download"></i></a></li>
-                <li><a href="#a-propos" role="tab"><i class="las la-info-circle"></i></a></li>
+                <li>
+                    <a href="#home" role="tab" title="Accueil">
+                        <i class="las la-home"></i>
+                        <span class="tab-name">Accueil</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#download" role="tab" title="Téléchargement">
+                        <i class="las la-download"></i>
+                        <span class="tab-name">Télécharger</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#a-propos" role="tab" title="À propos">
+                        <i class="las la-info-circle"></i>
+                        <span class="tab-name">À propos</span>
+                    </a>
+                </li>
             </ul>
             <!-- bottom aligned tabs -->
             <ul role="tablist">
