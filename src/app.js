@@ -14,7 +14,7 @@ const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/2a5a9898-1b6c-457c-b67e-
 async function getData(path) {
     const sessionData = JSON.parse(sessionStorage.getItem("session_data1"));
     if(sessionData) {
-        console.log("Chargement depuis drive");
+        console.log("Chargement depuis session storage");
         return sessionData
     } else {
         try {
@@ -79,7 +79,7 @@ const Loading = {
 
 // ****************************************************************************
 
-// composant "barre de recherche"
+// composant "barre de recherche communes"
 const SearchBar = {
     template: `
             <div id="search-bar-container">
@@ -245,7 +245,7 @@ const IntroTemplate = {
 
 // ****************************************************************************
 
-
+// composant élément de fiche
 const CardInfoTemplate = {
     props: ['subtitle', 'element'],
     template:`
@@ -256,17 +256,18 @@ const CardInfoTemplate = {
     `,
 };
 
-const RadioSwitch = {
-    template: `
-    <div class="btn-group-vertical">
-        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-        <label class="btn btn-outline-primary" for="btnradio1">Distribution nationale</label>
-        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-        <label class="btn btn-outline-primary" for="btnradio2">Répartition par échelon</label>
-    </div>
-    `,
-};
+// const RadioSwitch = {
+//     template: `
+//     <div class="btn-group-vertical">
+//         <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+//         <label class="btn btn-outline-primary" for="btnradio1">Distribution nationale</label>
+//         <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+//         <label class="btn btn-outline-primary" for="btnradio2">Répartition par échelon</label>
+//     </div>
+//     `,
+// };
 
+// composant liste communes obtenue au clic
 const CardListTemplate = {
     template:`
         <div class="card">
@@ -277,6 +278,7 @@ const CardListTemplate = {
     props: ['obs'],
 };
 
+// composant fiche
 const CardTemplate = {
     template:`
         <div class="card">
@@ -299,7 +301,7 @@ const CardTemplate = {
 
 // ****************************************************************************
 
-
+// composant sidebar
 const LeafletSidebar = {
     template: ` 
     <div id="sidebar" class="leaflet-sidebar collapsed">
@@ -461,7 +463,8 @@ const LeafletSidebar = {
 
 // //////////////////////////////////////////////
 
-
+// composant carte
+// c'est ici que les interactions sur la carte, entre la carte et la sidebar se produisent
 const LeafletMap = {
     template: `
         <div>
@@ -480,6 +483,7 @@ const LeafletMap = {
     },
     data() {
         return {
+            // configuration intiale : zoom, échelle, position sidebar ... etc. 
             config:{
                 map:{
                     container:'mapid',
@@ -504,6 +508,7 @@ const LeafletMap = {
                     position: "left",
                 },
             },
+            // définition des styles pour les couches et les tooltips
             styles:{
                 basemap:{
                     dep:{
@@ -580,7 +585,7 @@ const LeafletMap = {
                     },
                 }
             },
-            cardContent:null,
+            cardContent:null, // contenu de la fiche à remplir
             territoire:null,
         }
     },
@@ -672,15 +677,14 @@ const LeafletMap = {
         
         //////////////////////////////////////////////////
 
-        // affichage cercles proportionnels 
-        
-        // cercles prop à l'échelle des départements 
+        // calcul cercles proportionnels 
+        // à l'échelle des départements 
         let nbPvdPerDep = countBy(geojsonToJson(this.joinedData),"insee_dep");
         let depGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-dep.geojson"));
         let GeomNbPvdPerDep = this.joinGeom(depGeomCtr,nbPvdPerDep,"insee_dep");
         this.propSymbols(GeomNbPvdPerDep,"nb","insee_dep","lib_dep").addTo(this.propSymbolsDepLayer);
 
-        // cercles prop à l'échelle des regions 
+        // à l'échelle des regions 
         let nbPvdPerReg = countBy(geojsonToJson(this.joinedData),"insee_reg");
         let regGeomCtr = getCentroid(await this.loadGeom("data/fr-drom-4326-pur-style1-reg.geojson"));
         let GeomNbPvdPerReg = this.joinGeom(regGeomCtr,nbPvdPerReg,"insee_reg");
@@ -915,6 +919,7 @@ const LeafletMap = {
 // ****************************************************************************
 // ****************************************************************************
 
+// composant final et parent, qui constitue la vue princpale
 const App = {
     template: 
         `<div>
