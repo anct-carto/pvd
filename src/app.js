@@ -737,7 +737,7 @@ const LeafletMap = {
             new L.GeoJSON(cerclesDromGeom,this.styles.basemap.drom).addTo(this.baseMapLayer);
         },
         displayToponym() {
-            this.loadGeom("data/labels.geojson").then(labelGeom => {
+            this.loadGeom("data/cheflieux.geojson").then(labelGeom => {
                 // déclaration des objets "map" et "layer" comme constantes obligatoire sinon inconnu dans le zoomend avec "this"
                 const map = this.map;
                 const labelLayer = this.labelLayer;
