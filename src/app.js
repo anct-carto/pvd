@@ -8,8 +8,8 @@
 // Chargement données globales ****************************************************************************
 
 // source données
-const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/1fa831ec-d912-4277-8b95-a8b998bf951e"
-
+//const dataUrl = "https://www.data.gouv.fr/fr/datasets/r/1fa831ec-d912-4277-8b95-a8b998bf951e"
+const dataUrl = "data/liste-pvd-com2025-20251117.csv"
 // charge depuis session storage ou fetch
 async function getData(path) {
     const sessionData = JSON.parse(sessionStorage.getItem("session_data1"));
